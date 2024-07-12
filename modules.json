@@ -40,6 +40,16 @@
                         "git_sha": "04fbbc7c43cebc0b95d5b126f6d9fe4effa33519",
                         "installed_by": ["modules"]
                     },
+                    "sratools/fasterqdump": {
+                        "branch": "master",
+                        "git_sha": "dd935314930f972117455672f89e5cb0794719e5",
+                        "installed_by": ["modules"]
+                    },
+                    "sratools/prefetch": {
+                        "branch": "master",
+                        "git_sha": "dd935314930f972117455672f89e5cb0794719e5",
+                        "installed_by": ["modules"]
+                    },
                     "trimmomatic": {
                         "branch": "master",
                         "git_sha": "87b5deebfa6414dbc2352bd3e15543a4fe889327",
