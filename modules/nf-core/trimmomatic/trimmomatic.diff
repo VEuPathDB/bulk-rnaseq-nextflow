@@ -1,0 +1,36 @@
+Changes in module 'nf-core/trimmomatic'
+--- modules/nf-core/trimmomatic/main.nf
++++ modules/nf-core/trimmomatic/main.nf
+@@ -8,7 +8,7 @@
+         'biocontainers/trimmomatic:0.39--hdfd78af_2' }"
+ 
+     input:
+-    tuple val(meta), path(reads)
++    tuple val(meta), path(reads), path(phred)
+ 
+     output:
+     tuple val(meta), path("*.paired.trim*.fastq.gz")   , emit: trimmed_reads
+@@ -25,13 +25,20 @@
+     def args = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     def trimmed = meta.single_end ? "SE" : "PE"
++    def assetsDir = projectDir + "/assets"
+     def output = meta.single_end ?
+         "${prefix}.SE.paired.trim.fastq.gz" // HACK to avoid unpaired and paired in the trimmed_reads output
+         : "${prefix}.paired.trim_1.fastq.gz ${prefix}.unpaired.trim_1.fastq.gz ${prefix}.paired.trim_2.fastq.gz ${prefix}.unpaired.trim_2.fastq.gz"
+-    def qual_trim = task.ext.args2 ?: ''
++    def qual_trim = meta.single_end ?
++        "ILLUMINACLIP:${assetsDir}/All_adaptors-SE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:20" :
++        "ILLUMINACLIP:${assetsDir}/All_adaptors-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:20"
++
+     """
++    phredVar=\$(cat $phred)
++
+     trimmomatic \\
+         $trimmed \\
++        -\$phredVar \\
+         -threads $task.cpus \\
+         -trimlog ${prefix}_trim.log \\
+         -summary ${prefix}.summary \\
+
+************************************************************

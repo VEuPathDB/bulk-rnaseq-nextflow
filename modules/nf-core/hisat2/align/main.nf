@@ -49,7 +49,7 @@ process HISAT2_ALIGN {
             $seq_center \\
             $unaligned \\
             $args \\
-            | samtools view -bS -F 4 -F 256 - > ${prefix}.bam
+            | samtools view -bS -F 256 - > ${prefix}.bam
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
@@ -74,7 +74,7 @@ process HISAT2_ALIGN {
             --no-mixed \\
             --no-discordant \\
             $args \\
-            | samtools view -bS -F 4 -F 8 -F 256 - > ${prefix}.bam
+            | samtools view -bS -F 256 - > ${prefix}.bam
 
         if [ -f ${prefix}.unmapped.fastq.1.gz ]; then
             mv ${prefix}.unmapped.fastq.1.gz ${prefix}.unmapped_1.fastq.gz

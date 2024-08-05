@@ -1,15 +1,39 @@
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    PARAMS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+params.hisat2_build_memory = null
+params.seq_center = null
+params.save_unaligned = true
+
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { FASTQC                                    } from '../modules/nf-core/fastqc/main'
+include { FASTQCCHECK                               } from '../modules/local/fastqccheck.nf'
 
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
-include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMap       } from 'plugin/nf-validation'
-include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_bulkrnaseq_pipeline'
+// NOTE: trimmomatic is an adapted nf-core module
+include { TRIMMOMATIC                               } from '../modules/nf-core/trimmomatic/main'
+
+include { HISAT2_BUILD                              } from '../modules/nf-core/hisat2/build/main'
+
+// NOTE: hisat2 align is adapted from nf-core module
+include { HISAT2_ALIGN                              } from '../modules/nf-core/hisat2/align/main'
+
+include { SAMTOOLS_SORT as SAMTOOLS_SORT_DEFAULT    } from '../modules/nf-core/samtools/sort/main'
+
+include { BAM_FILTER_AND_SORT_BY_NAME               } from '../subworkflows/local/bam_postprocessing'
+include { HTSEQ_COUNTS_AND_TPM                      } from '../subworkflows/local/htseq_counting_and_tpm'
+
+include { BED_AND_STATS_FROM_SPLIT_BAM              } from '../modules/local/splitbamstats.nf'
+
+
+// TODO Junctions
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,72 +48,52 @@ workflow BULKRNASEQ {
 
     main:
 
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions = Channel.empty();
+    ch_multiqc_files = Channel.empty();
 
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    HISAT2_BUILD(tuple(params.genome, [params.fasta]),
+                 tuple([], []),
+                 tuple([], []) );
 
-    //
-    // Collate and save software versions
-    //
-    softwareVersionsToYAML(ch_versions)
-        .collectFile(
-            storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_pipeline_software_mqc_versions.yml',
-            sort: true,
-            newLine: true
-        ).set { ch_collated_versions }
+    FASTQC(ch_samplesheet);
 
-    //
-    // MODULE: MultiQC
-    //
-    ch_multiqc_config        = Channel.fromPath(
-        "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-    ch_multiqc_custom_config = params.multiqc_config ?
-        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        Channel.empty()
-    ch_multiqc_logo          = params.multiqc_logo ?
-        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
+    FASTQCCHECK(FASTQC.out.zip);
 
-    summary_params      = paramsSummaryMap(
-        workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
+    TRIMMOMATIC(ch_samplesheet.join(FASTQCCHECK.out.phred));
 
-    ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
-        file(params.multiqc_methods_description, checkIfExists: true) :
-        file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
-        methodsDescriptionText(ch_multiqc_custom_methods_description))
+    HISAT2_ALIGN(TRIMMOMATIC.out.trimmed_reads,
+                 HISAT2_BUILD.out.index,
+                 tuple([], [])
+    );
 
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_methods_description.collectFile(
-            name: 'methods_description_mqc.yaml',
-            sort: true
-        )
-    )
+    SAMTOOLS_SORT_DEFAULT(HISAT2_ALIGN.out.bam, tuple([], []))
 
-    MULTIQC (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
-    )
+    BAM_FILTER_AND_SORT_BY_NAME(SAMTOOLS_SORT_DEFAULT.out.bam)
+
+    HTSEQ_COUNTS_AND_TPM(BAM_FILTER_AND_SORT_BY_NAME.out.bam)
+
+
+    BED_AND_STATS_FROM_SPLIT_BAM(SAMTOOLS_SORT_DEFAULT.out.bam)
+
+    //        SPLITBAMSTATS(SAMTOOLS_SORT_DEFAULT.out.bam.join(SAMTOOLS_INDEX.out.bai))
+//
+//
+
+//TODO Deal with versions from subworkflows
+    // ch_versions = ch_versions.mix(
+    //     HISAT2_BUILD.out.versions.first(),
+    //     // FASTQC.out.versions.first(),
+    //     // FASTQCCHECK.out.versions.first(),
+    //     // TRIMMOMATIC.out.versions.first(),
+    //     // HISAT2_ALIGN.out.versions.first(),
+    //     // SAMTOOLS_SORT_DEFAULT.out.versions.first()
+    // )
 
     emit:
-    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
 }
+
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
