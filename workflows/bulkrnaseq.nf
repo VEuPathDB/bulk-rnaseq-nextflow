@@ -55,22 +55,32 @@ workflow BULKRNASEQ {
     // TODO:  SRA ids vs local fastq file input
     // Rich??
 
-    // TODO:  use boolean param to decide on creating the index
-    //
-    HISAT2_BUILD(tuple(params.genome, [params.fasta]),
-                 tuple([], []),
-                 tuple([], []) );
-
     FASTQC(ch_samplesheet);
 
     FASTQCCHECK(FASTQC.out.zip);
 
     TRIMMOMATIC(ch_samplesheet.join(FASTQCCHECK.out.phred));
 
-    HISAT2_ALIGN(TRIMMOMATIC.out.trimmed_reads,
-                 HISAT2_BUILD.out.index,
-                 tuple([], [])
-    );
+    // TODO:  use boolean param to decide on creating the index
+    //
+
+    if(!params.fromIndex) {
+        HISAT2_BUILD(tuple(params.genome, [params.fasta]),
+                     tuple([], []),
+                     tuple([], [])
+        );
+
+        HISAT2_ALIGN(TRIMMOMATIC.out.trimmed_reads,
+                     HISAT2_BUILD.out.index,
+                     tuple([], [])
+        );
+    }
+    else {
+        HISAT2_ALIGN(TRIMMOMATIC.out.trimmed_reads,
+                     tuple(params.genome, params.hisatIndex),
+                     tuple([], [])
+        );
+    }
 
     SAMTOOLS_SORT_DEFAULT(HISAT2_ALIGN.out.bam, tuple([], []))
 
