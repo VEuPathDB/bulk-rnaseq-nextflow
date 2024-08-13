@@ -30,7 +30,7 @@ include { SAMTOOLS_SORT as SAMTOOLS_SORT_DEFAULT    } from '../modules/nf-core/s
 include { BAM_FILTER_AND_SORT_BY_NAME               } from '../subworkflows/local/bam_postprocessing'
 include { HTSEQ_COUNTS_AND_TPM                      } from '../subworkflows/local/htseq_counting_and_tpm'
 
-include { BED_AND_STATS_FROM_SPLIT_BAM              } from '../modules/local/splitbamstats.nf'
+include { SPLIT_BAM_STATS_AND_BED                   } from '../subworkflows/local/split_bam_stats_and_bed'
 
 include { SPLICE_CROSS_READS                        } from '../modules/local/splicecorssreads.nf'
 
@@ -53,6 +53,12 @@ workflow BULKRNASEQ {
     ch_versions = Channel.empty();
     ch_multiqc_files = Channel.empty();
 
+
+    // TODO:  SRA ids vs local fastq file input
+    // Rich??
+
+    // TODO:  use boolean param to decide on creating the index
+    //
     HISAT2_BUILD(tuple(params.genome, [params.fasta]),
                  tuple([], []),
                  tuple([], []) );
@@ -74,12 +80,10 @@ workflow BULKRNASEQ {
 
     HTSEQ_COUNTS_AND_TPM(BAM_FILTER_AND_SORT_BY_NAME.out.bam)
 
+    SPLIT_BAM_STATS_AND_BED(SAMTOOLS_SORT_DEFAULT.out.bam)
 
-    BED_AND_STATS_FROM_SPLIT_BAM(SAMTOOLS_SORT_DEFAULT.out.bam)
-
-    //        SPLITBAMSTATS(SAMTOOLS_SORT_DEFAULT.out.bam.join(SAMTOOLS_INDEX.out.bai))
-//
-//
+    //TODO:  add step for junctions
+    // Saikou
 
 //TODO Deal with versions from subworkflows
     // ch_versions = ch_versions.mix(

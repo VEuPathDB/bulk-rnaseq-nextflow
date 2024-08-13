@@ -25,18 +25,21 @@ workflow HTSEQ_COUNTS_AND_TPM {
 
     ch_versions = Channel.empty();
 
-    if(params.isStranded) {
-        HTSEQ_COUNT_FOR(bamSortedByName.map{tuple(it[0], it[1], [])}, tuple(params.genome, [params.gtf]))
-        HTSEQ_COUNT_FOR_NU(bamSortedByName.map{tuple(it[0], it[1], [])}, tuple(params.genome, [params.gtf]))
+    bamInput = bamSortedByName.map{tuple(it[0], it[1], [])}
+    gtfInput = tuple(params.genome, [params.gtf])
 
-        HTSEQ_COUNT_REV(bamSortedByName.map{tuple(it[0], it[1], [])}, tuple(params.genome, [params.gtf]))
-        HTSEQ_COUNT_REV_NU(bamSortedByName.map{tuple(it[0], it[1], [])}, tuple(params.genome, [params.gtf]))
+    if(params.isStranded) {
+        HTSEQ_COUNT_FOR(bamInput, gtfInput)
+        HTSEQ_COUNT_FOR_NU(bamInput, gtfInput)
+
+        HTSEQ_COUNT_REV(bamInput, gtfInput)
+        HTSEQ_COUNT_REV_NU(bamInput, gtfInput)
 
         ch_versions = ch_versions.mix(HTSEQ_COUNT_FOR.out.versions.first());
     }
     else {
-        HTSEQ_COUNT(bamSortedByName.map{tuple(it[0], it[1], [])}, tuple(params.genome, [params.gtf]))
-        HTSEQ_COUNT_NU(bamSortedByName.map{tuple(it[0], it[1], [])}, tuple(params.genome, [params.gtf]))
+        HTSEQ_COUNT(bamInput, gtfInput)
+        HTSEQ_COUNT_NU(bamInput, gtfInput)
 
 
         // TODO:  MAKE TPM FILES HERE FOR BOTH UNIQUE AND NU (AND ABOVE)
