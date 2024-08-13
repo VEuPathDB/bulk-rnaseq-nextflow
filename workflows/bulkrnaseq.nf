@@ -32,6 +32,8 @@ include { HTSEQ_COUNTS_AND_TPM                      } from '../subworkflows/loca
 
 include { BED_AND_STATS_FROM_SPLIT_BAM              } from '../modules/local/splitbamstats.nf'
 
+include { SPLICE_CROSS_READS                        } from '../modules/local/splicecorssreads.nf'
+
 
 // TODO Junctions
 
