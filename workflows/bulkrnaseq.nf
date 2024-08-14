@@ -54,8 +54,6 @@ workflow BULKRNASEQ {
     ch_versions = Channel.empty();
     ch_multiqc_files = Channel.empty();
 
-    ch_samplesheet.view()
-
     if (params.fromSRA) {
         SRATOOLS_PREFETCH(ch_samplesheet,[],[]);
         SRATOOLS_FASTERQDUMP(SRATOOLS_PREFETCH.out.sra,[],[]);
