@@ -17,9 +17,14 @@
                 "type": "string",
                 "pattern": "^\\S+$",
 		"exists": true,
-                "errorMessage": "Each sample requires a SRAID"
+                "errorMessage": "Each sample from sra requires a SRAID"
             },
-            "fastq_1": {
+	    "ispaired": {
+                "type": "boolean",
+		"exists": true,
+                "errorMessage": "Each sample from sra requires layout information"
+            },
+	    "fastq_1": {
                 "type": "string",
                 "format": "file-path",
 		"exists": true,

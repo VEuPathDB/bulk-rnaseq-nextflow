@@ -85,7 +85,7 @@ workflow PIPELINE_INITIALISATION {
         Channel
             .fromSamplesheet("input")
             .map {
-                meta, sraid, fastq_1, fastq_2 ->
+                meta, fastq_1, fastq_2 ->
                     if (!fastq_2) {
                         return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
                     } else {
@@ -106,8 +106,13 @@ workflow PIPELINE_INITIALISATION {
         Channel
             .fromSamplesheet("input")
             .map {
-                meta, sraid, fastq_1, fastq_2 ->
-                    return [ meta, sraid ]
+                meta, sraid, ispaired, fastq_1, fastq_2 ->
+		    if (ispaired) {
+                        return [ meta + [ single_end:false, ], sraid ]
+	            }
+		    else {
+                        return [ meta + [ single_end:true ], sraid ]
+                    }
             }
 	    .view()
             .set { ch_samplesheet }
