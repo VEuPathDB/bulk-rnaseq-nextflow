@@ -32,7 +32,7 @@ include { HTSEQ_COUNTS_AND_TPM                      } from '../subworkflows/loca
 
 include { SPLIT_BAM_STATS_AND_BED                   } from '../subworkflows/local/split_bam_stats_and_bed'
 
-include { SPLICE_CROSS_READS                        } from '../modules/local/splicecorssreads.nf'
+//include { SPLICE_CROSS_READS                        } from '../modules/local/splicecorssreads.nf'
 
 
 // TODO Junctions
@@ -82,7 +82,8 @@ workflow BULKRNASEQ {
 
     SPLIT_BAM_STATS_AND_BED(SAMTOOLS_SORT_DEFAULT.out.bam)
 
-    //TODO:  add step for junctions
+    // TODO: add a step to convert bam to sam file. Use samtools container
+    //TODO:  add step for junctions from the sam file. Use the perl:bookworm container
     // Saikou
 
 //TODO Deal with versions from subworkflows

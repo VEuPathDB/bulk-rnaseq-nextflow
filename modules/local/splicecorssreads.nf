@@ -1,10 +1,9 @@
 process SPLICE_CROSS_READS {
 
-
-    container 'docker.io/veupathdb/shortreadaligner:latest'
+    container 'docker.io/perl:bookworm'
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(sam)
 
 
     output:
@@ -19,7 +18,7 @@ process SPLICE_CROSS_READS {
 
     """
     gsnapSam2Junctions.pl --is_bam \
-                      --input_file ${bam} \
+                      --input_file ${sam} \
                       --output_file junctions.tab
 
     cat <<-END_VERSIONS > versions.yml
