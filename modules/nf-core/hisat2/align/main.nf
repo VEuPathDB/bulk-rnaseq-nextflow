@@ -74,8 +74,9 @@ process HISAT2_ALIGN {
             $unaligned \\
             --no-mixed \\
             --no-discordant \\
-            $args \\
-            | samtools view -bS -F 256 - > ${prefix}.bam
+            $args > tmp.sam
+        samtools view -bS -F 256 tmp.sam > ${prefix}.bam
+        rm tmp.sam
 
         if [ -f ${prefix}.unmapped.fastq.1.gz ]; then
             mv ${prefix}.unmapped.fastq.1.gz ${prefix}.unmapped_1.fastq.gz
