@@ -1,25 +1,40 @@
 Changes in module 'nf-core/hisat2/align'
 --- modules/nf-core/hisat2/align/main.nf
 +++ modules/nf-core/hisat2/align/main.nf
-@@ -48,8 +48,9 @@
+@@ -42,14 +42,16 @@
+         hisat2 \\
+             -x \$INDEX \\
+             -U $reads \\
++            -S tmp.sam \\
+             $strandedness \\
+             $ss \\
+             --summary-file ${prefix}.hisat2.summary.log \\
              --threads $task.cpus \\
              $seq_center \\
              $unaligned \\
 -            $args \\
 -            | samtools view -bS -F 4 -F 256 - > ${prefix}.bam
-+            $args > tmp.sam
++            $args
 +        samtools view -bS -F 256 tmp.sam > ${prefix}.bam
 +        rm tmp.sam
  
          cat <<-END_VERSIONS > versions.yml
          "${task.process}":
-@@ -73,8 +74,9 @@
+@@ -65,6 +67,7 @@
+             -x \$INDEX \\
+             -1 ${reads[0]} \\
+             -2 ${reads[1]} \\
++            -S tmp.sam \\
+             $strandedness \\
+             $ss \\
+             --summary-file ${prefix}.hisat2.summary.log \\
+@@ -73,8 +76,9 @@
              $unaligned \\
              --no-mixed \\
              --no-discordant \\
 -            $args \\
 -            | samtools view -bS -F 4 -F 8 -F 256 - > ${prefix}.bam
-+            $args > tmp.sam
++            $args
 +        samtools view -bS -F 256 tmp.sam > ${prefix}.bam
 +        rm tmp.sam
  

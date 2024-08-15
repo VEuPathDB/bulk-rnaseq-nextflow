@@ -42,13 +42,14 @@ process HISAT2_ALIGN {
         hisat2 \\
             -x \$INDEX \\
             -U $reads \\
+            -S tmp.sam \\
             $strandedness \\
             $ss \\
             --summary-file ${prefix}.hisat2.summary.log \\
             --threads $task.cpus \\
             $seq_center \\
             $unaligned \\
-            $args > tmp.sam
+            $args
         samtools view -bS -F 256 tmp.sam > ${prefix}.bam
         rm tmp.sam
 
@@ -66,6 +67,7 @@ process HISAT2_ALIGN {
             -x \$INDEX \\
             -1 ${reads[0]} \\
             -2 ${reads[1]} \\
+            -S tmp.sam \\
             $strandedness \\
             $ss \\
             --summary-file ${prefix}.hisat2.summary.log \\
@@ -74,7 +76,7 @@ process HISAT2_ALIGN {
             $unaligned \\
             --no-mixed \\
             --no-discordant \\
-            $args > tmp.sam
+            $args
         samtools view -bS -F 256 tmp.sam > ${prefix}.bam
         rm tmp.sam
 
