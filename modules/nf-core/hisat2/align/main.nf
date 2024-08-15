@@ -48,8 +48,9 @@ process HISAT2_ALIGN {
             --threads $task.cpus \\
             $seq_center \\
             $unaligned \\
-            $args \\
-            | samtools view -bS -F 256 - > ${prefix}.bam
+            $args > tmp.sam
+        samtools view -bS -F 256 tmp.sam > ${prefix}.bam
+        rm tmp.sam
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
