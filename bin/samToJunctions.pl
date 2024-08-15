@@ -1,4 +1,4 @@
-#!@perl@
+#!/usr/local/bin/perl
 
 # Modified from sam2junctions.pl by Gregory R Grant (University of Pennsylvania, 2010)
 

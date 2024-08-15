@@ -21,11 +21,7 @@ process SPLICE_CROSS_READS {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    echo \$PATH
-    ls -l /home/sbah/bulkrnaseq/bin
-    gsnapSam2Junctions.pl
-                      --input_file ${sam} \
-                      --output_file ${prefix}_junctions.tab
+    samToJunctions.pl --input_file ${sam} --output_file ${prefix}_junctions.tab
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
