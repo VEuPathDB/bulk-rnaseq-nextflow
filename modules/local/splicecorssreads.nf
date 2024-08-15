@@ -1,5 +1,8 @@
 process SPLICE_CROSS_READS {
 
+    tag "$meta.id"
+    label 'process_high'
+
     container 'docker.io/perl:bookworm'
 
     input:
@@ -7,7 +10,7 @@ process SPLICE_CROSS_READS {
 
 
     output:
-    path("junctions.tab")
+    path("*junctions.tab")
 
 
     when:
@@ -15,11 +18,14 @@ process SPLICE_CROSS_READS {
 
     script:
     def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    gsnapSam2Junctions.pl --is_bam \
+    echo \$PATH
+    ls -l /home/sbah/bulkrnaseq/bin
+    gsnapSam2Junctions.pl
                       --input_file ${sam} \
-                      --output_file junctions.tab
+                      --output_file ${prefix}_junctions.tab
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
