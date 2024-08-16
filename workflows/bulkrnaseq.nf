@@ -86,10 +86,10 @@ workflow BULKRNASEQ {
     
     // Saikou
     // TODO: add a step to convert bam to sam file. Use samtools container
-    CONVERT_SAM_TO_BAM(HISAT2_ALIGN.out.bam)
+    //CONVERT_SAM_TO_BAM(HISAT2_ALIGN.out.bam)
 
     //TODO:  add step for junctions from the sam file. Use the perl:bookworm container
-    SPLICE_CROSS_READS(CONVERT_SAM_TO_BAM.out.sam)
+    SPLICE_CROSS_READS(HISAT2_ALIGN.out.bam)
 
 //TODO Deal with versions from subworkflows
     // ch_versions = ch_versions.mix(
