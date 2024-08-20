@@ -32,7 +32,8 @@ include { HTSEQ_COUNTS_AND_TPM                      } from '../subworkflows/loca
 
 include { SPLIT_BAM_STATS_AND_BED                   } from '../subworkflows/local/split_bam_stats_and_bed'
 
-include { CONVERT_SAM_TO_BAM                        } from '../modules/local/convertbamtosam.nf'
+include { SAMTOOLS_INDEX                            } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_BAM_TO_SAM      } from '../modules/nf-core/samtools/view/main'
 
 include { SPLICE_CROSS_READS                        } from '../modules/local/splicecorssreads.nf'
 
@@ -80,16 +81,13 @@ workflow BULKRNASEQ {
 
     BAM_FILTER_AND_SORT_BY_NAME(SAMTOOLS_SORT_DEFAULT.out.bam)
 
-    HTSEQ_COUNTS_AND_TPM(BAM_FILTER_AND_SORT_BY_NAME.out.bam)
+    HTSEQ_COUNTS_AND_TPM(BAM_FILTER_AND_SORT_BY_NAME.out.bamSortedByName)
 
     SPLIT_BAM_STATS_AND_BED(SAMTOOLS_SORT_DEFAULT.out.bam)
-    
-    // Saikou
-    // TODO: add a step to convert bam to sam file. Use samtools container
-    //CONVERT_SAM_TO_BAM(HISAT2_ALIGN.out.bam)
 
-    //TODO:  add step for junctions from the sam file. Use the perl:bookworm container
-    SPLICE_CROSS_READS(HISAT2_ALIGN.out.bam)
+    // MAKE SAM file and pass to perl script for junctions
+    SAMTOOLS_BAM_TO_SAM(BAM_FILTER_AND_SORT_BY_NAME.out.bamSortedByDefaultWithIndex, tuple([], []), [])
+    SPLICE_CROSS_READS(SAMTOOLS_BAM_TO_SAM.out.sam)
 
 //TODO Deal with versions from subworkflows
     // ch_versions = ch_versions.mix(

@@ -33,9 +33,11 @@ workflow BAM_FILTER_AND_SORT_BY_NAME {
 
     SAMTOOLS_INDEX(sortedBam)
 
-    SAMTOOLS_VIEW_READ_NO_MATE(sortedBam.join(SAMTOOLS_INDEX.out.bai), tuple([], []), [])
-    SAMTOOLS_VIEW_MATE_NO_READ(sortedBam.join(SAMTOOLS_INDEX.out.bai), tuple([], []), [])
-    SAMTOOLS_VIEW_READ_AND_MATE(sortedBam.join(SAMTOOLS_INDEX.out.bai), tuple([], []), [])
+    bamSortedByDefaultWithIndex = sortedBam.join(SAMTOOLS_INDEX.out.bai)
+
+    SAMTOOLS_VIEW_READ_NO_MATE(bamSortedByDefaultWithIndex, tuple([], []), [])
+    SAMTOOLS_VIEW_MATE_NO_READ(bamSortedByDefaultWithIndex, tuple([], []), [])
+    SAMTOOLS_VIEW_READ_AND_MATE(bamSortedByDefaultWithIndex, tuple([], []), [])
 
     combined = combineSamtoolsFilters(
         SAMTOOLS_VIEW_READ_NO_MATE.out.bam,
@@ -55,7 +57,8 @@ workflow BAM_FILTER_AND_SORT_BY_NAME {
     );
 
     emit:
-    bam = SAMTOOLS_SORT_BY_NAME.out.bam
+    bamSortedByName = SAMTOOLS_SORT_BY_NAME.out.bam
+    bamSortedByDefaultWithIndex = bamSortedByDefaultWithIndex
     versions = ch_versions
 }
 

@@ -10,8 +10,8 @@ my ($minsize, $samFile, $outputFile, $isBam);
 
 &GetOptions("min_size=i"=> \$minsize,
             "input_file=s" => \$samFile,
-            "output_file=s" => \$outputFile,
-            "is_bam" => \$isBam,
+            "output_file=s" => \$outputFile
+
     );
 
 $minsize = 0 unless($minsize);;
@@ -22,10 +22,6 @@ unless(-e $samFile) {
 
 my %junctions;
 
-
-if($isBam) {
-    $samFile = "samtools view $samFile|";
-}
 
 open(INFILE, $samFile) or die "\nError: Cannot open '$samFile' for reading\n\n";
 
