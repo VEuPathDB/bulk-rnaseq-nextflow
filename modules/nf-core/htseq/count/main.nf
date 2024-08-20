@@ -21,13 +21,14 @@ process HTSEQ_COUNT {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def sampleId = "${meta.id}"
 
     """
     htseq-count \\
         ${input} \\
         ${gtf} \\
         ${args} \\
-        > ${prefix}.txt
+        > ${sampleId}_${prefix}.txt
 
 
     cat <<-END_VERSIONS > versions.yml
