@@ -2,7 +2,7 @@ process FORMAT_INPUT_FROM_SRA {
     tag "$meta.id"
     label 'process_single'
 
-    container 'docker.io/veupathdb/shortreadaligner:latest'
+    container 'docker.io/ubuntu:oracular'
 
     input:
     tuple val(meta), path(sra)
