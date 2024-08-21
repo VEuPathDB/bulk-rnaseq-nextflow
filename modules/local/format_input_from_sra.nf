@@ -2,7 +2,9 @@ process FORMAT_INPUT_FROM_SRA {
     tag "$meta.id"
     label 'process_single'
 
-    container 'docker.io/ubuntu:oracular'
+    shell '/bin/sh'
+
+    container 'docker.io/veupathdb/alpine_bash:latest'
 
     input:
     tuple val(meta), path(sra)
