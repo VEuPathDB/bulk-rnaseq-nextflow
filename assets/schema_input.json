@@ -13,17 +13,6 @@
                 "errorMessage": "Sample name must be provided and cannot contain spaces",
                 "meta": ["id"]
             },
-	    "sraid": {
-                "type": "string",
-                "pattern": "^\\S+$",
-		"exists": true,
-                "errorMessage": "Each sample from sra requires a SRAID"
-            },
-	    "ispaired": {
-                "type": "boolean",
-		"exists": true,
-                "errorMessage": "Each sample from sra requires layout information"
-            },
 	    "fastq_1": {
                 "type": "string",
                 "format": "file-path",
@@ -39,6 +28,6 @@
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             }
         },
-        "required": ["sample"]
+        "required": ["sample", "fastq_1"]
     }
 }

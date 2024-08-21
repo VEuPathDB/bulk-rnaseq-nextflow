@@ -27,10 +27,6 @@ include { HISAT2_ALIGN                              } from '../modules/nf-core/h
 
 include { SAMTOOLS_SORT as SAMTOOLS_SORT_DEFAULT    } from '../modules/nf-core/samtools/sort/main'
 
-include { SRATOOLS_FASTERQDUMP                      } from '../modules/nf-core/sratools/fasterqdump/main'
-
-include { SRATOOLS_PREFETCH                         } from '../modules/nf-core/sratools/prefetch/main'
-
 include { BAM_FILTER_AND_SORT_BY_NAME               } from '../subworkflows/local/bam_postprocessing'
 include { HTSEQ_COUNTS_AND_TPM                      } from '../subworkflows/local/htseq_counting_and_tpm'
 
@@ -54,18 +50,9 @@ workflow BULKRNASEQ {
     ch_versions = Channel.empty();
     ch_multiqc_files = Channel.empty();
 
-    if (params.fromSRA) {
-        SRATOOLS_PREFETCH(ch_samplesheet,[],[]);
-        SRATOOLS_FASTERQDUMP(SRATOOLS_PREFETCH.out.sra,[],[]);
-        FASTQC(SRATOOLS_FASTERQDUMP.out.reads);
-        FASTQCCHECK(FASTQC.out.zip);
-        TRIMMOMATIC(SRATOOLS_FASTERQDUMP.out.reads.join(FASTQCCHECK.out.phred));	
-    }
-    else {
-        FASTQC(ch_samplesheet);
-        FASTQCCHECK(FASTQC.out.zip);
-        TRIMMOMATIC(ch_samplesheet.join(FASTQCCHECK.out.phred));	
-    }
+    FASTQC(ch_samplesheet);
+    FASTQCCHECK(FASTQC.out.zip);
+    TRIMMOMATIC(ch_samplesheet.join(FASTQCCHECK.out.phred));	
 
     if(!params.fromIndex) {
         HISAT2_BUILD(tuple(params.genome, [params.fasta]),

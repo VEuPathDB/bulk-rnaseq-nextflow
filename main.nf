@@ -18,15 +18,23 @@ nextflow.enable.dsl = 2
 include { BULKRNASEQ  } from './workflows/bulkrnaseq'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_bulkrnaseq_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_bulkrnaseq_pipeline'
-
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_bulkrnaseq_pipeline'
-
+include { RETRIEVE_FROM_SRA       } from './subworkflows/local/retrieve_from_sra'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+
+//---------------------------------------------------------------
+// getFromSra
+//---------------------------------------------------------------
+
+workflow getFromSra {
+    main:
+    RETRIEVE_FROM_SRA(params.input)
+}
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,20 +45,18 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_bulk
 workflow {
 
     main:
-
-    //
+    
     // SUBWORKFLOW: Run initialisation tasks
-    //
     PIPELINE_INITIALISATION (
-        params.version,
-        params.help,
-        params.validate_params,
-        params.monochrome_logs,
-        args,
-        params.outdir,
-        params.input
+    params.version,
+    params.help,
+    params.validate_params,
+    params.monochrome_logs,
+    args,
+    params.outdir,
+    params.input
     )
-
+    
     //
     // WORKFLOW: Run main workflow
     //

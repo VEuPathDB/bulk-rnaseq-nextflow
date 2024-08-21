@@ -80,44 +80,26 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
+    Channel
+        .fromSamplesheet("input")
+        .map {
+            meta, fastq_1, fastq_2 ->
+                if (!fastq_2) {
+                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
+                } else {
+                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+                }
+        }
+        .groupTuple()
+        .map {
+            validateInputSamplesheet(it)
+        }
+        .map {
+            meta, fastqs ->
+                return [ meta, fastqs.flatten() ]
+        }
+        .set { ch_samplesheet }
 
-    if(!params.fromSRA) {
-        Channel
-            .fromSamplesheet("input")
-            .map {
-                meta, sraid, ispaired, fastq_1, fastq_2  ->
-                    if (!fastq_2) {
-                        return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                    } else {
-                        return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                    }
-            }
-            .groupTuple()
-            .map {
-                validateInputSamplesheet(it)
-            }
-            .map {
-                meta, fastqs ->
-                    return [ meta, fastqs.flatten() ]
-            }
-            .set { ch_samplesheet }
-    }
-    else {
-        Channel
-            .fromSamplesheet("input")
-            .map {
-                meta, sraid, ispaired, fastq_1, fastq_2 ->
-		    if (ispaired) {
-                        return [ meta + [ single_end:false, ], sraid ]
-	            }
-		    else {
-                        return [ meta + [ single_end:true ], sraid ]
-                    }
-            }
-	    .view()
-            .set { ch_samplesheet }
-    }
-    
     emit:
     samplesheet = ch_samplesheet
     versions    = ch_versions
@@ -190,7 +172,6 @@ def validateInputSamplesheet(input) {
 
     return [ metas[0], fastqs ]
 }
-
 //
 // Get attribute from genome config file e.g. fasta
 //
