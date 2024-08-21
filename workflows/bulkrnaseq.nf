@@ -32,6 +32,7 @@ include { HTSEQ_COUNTS_AND_TPM                      } from '../subworkflows/loca
 
 include { SPLIT_BAM_STATS_AND_BED                   } from '../subworkflows/local/split_bam_stats_and_bed'
 
+
 include { SAMTOOLS_INDEX                            } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_VIEW as SAMTOOLS_BAM_TO_SAM      } from '../modules/nf-core/samtools/view/main'
 
@@ -56,26 +57,27 @@ workflow BULKRNASEQ {
     ch_versions = Channel.empty();
     ch_multiqc_files = Channel.empty();
 
-
-    // TODO:  SRA ids vs local fastq file input
-    // Rich??
-
-    // TODO:  use boolean param to decide on creating the index
-    //
-    HISAT2_BUILD(tuple(params.genome, [params.fasta]),
-                 tuple([], []),
-                 tuple([], []) );
-
     FASTQC(ch_samplesheet);
-
     FASTQCCHECK(FASTQC.out.zip);
+    TRIMMOMATIC(ch_samplesheet.join(FASTQCCHECK.out.phred));	
 
-    TRIMMOMATIC(ch_samplesheet.join(FASTQCCHECK.out.phred));
+    if(!params.fromIndex) {
+        HISAT2_BUILD(tuple(params.genome, [params.fasta]),
+                     tuple([], []),
+                     tuple([], [])
+        );
 
-    HISAT2_ALIGN(TRIMMOMATIC.out.trimmed_reads,
-                 HISAT2_BUILD.out.index,
-                 tuple([], [])
-    );
+        HISAT2_ALIGN(TRIMMOMATIC.out.trimmed_reads,
+                     HISAT2_BUILD.out.index,
+                     tuple([], [])
+        );
+    }
+    else {
+        HISAT2_ALIGN(TRIMMOMATIC.out.trimmed_reads,
+                     tuple(params.genome, params.hisatIndex),
+                     tuple([], [])
+        );
+    }
 
     SAMTOOLS_SORT_DEFAULT(HISAT2_ALIGN.out.bam, tuple([], []))
 
