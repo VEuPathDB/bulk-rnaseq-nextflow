@@ -8,7 +8,7 @@ process SN_FILTER {
     tuple val(meta), path(input)
 
     output:
-    tuple val(meta), path("*filtered.stats"), emit: stats
+    tuple val(meta), path("*.filtered"), emit: stats
     tuple val(meta), env(TOTAL_READS), emit: total_reads
     path "versions.yml"           , emit: versions
 
@@ -24,9 +24,9 @@ process SN_FILTER {
     def paired = 'reads properly paired'
 
     """
-    grep '^SN' $input  | perl -e 'while(<>){chomp; my (\$h, \$a, \$v) = split(/\\t/, \$_); \$a =~ s/\\:\$//; print "\$a\\t\$v\\n" if (\$a eq "$total" || \$a eq "$reads" || \$a eq "$length"|| \$a eq "$paired");}' >${input}_filtered.stats
+    grep '^SN' $input  | perl -e 'while(<>){chomp; my (\$h, \$a, \$v) = split(/\\t/, \$_); \$a =~ s/\\:\$//; print "\$a\\t\$v\\n" if (\$a eq "$total" || \$a eq "$reads" || \$a eq "$length"|| \$a eq "$paired");}' >${input}.filtered
 
-    TOTAL_READS=\$(grep 'total' ${input}_filtered.stats |cut -f 2)
+    TOTAL_READS=\$(grep 'total' ${input}.filtered |cut -f 2)
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

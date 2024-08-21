@@ -32,6 +32,13 @@ include { HTSEQ_COUNTS_AND_TPM                      } from '../subworkflows/loca
 
 include { SPLIT_BAM_STATS_AND_BED                   } from '../subworkflows/local/split_bam_stats_and_bed'
 
+
+include { SAMTOOLS_INDEX                            } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_VIEW as SAMTOOLS_BAM_TO_SAM      } from '../modules/nf-core/samtools/view/main'
+
+include { SPLICE_CROSS_READS                        } from '../modules/local/splicecorssreads.nf'
+
+
 // TODO Junctions
 
 /*
@@ -76,12 +83,13 @@ workflow BULKRNASEQ {
 
     BAM_FILTER_AND_SORT_BY_NAME(SAMTOOLS_SORT_DEFAULT.out.bam)
 
-    HTSEQ_COUNTS_AND_TPM(BAM_FILTER_AND_SORT_BY_NAME.out.bam)
+    HTSEQ_COUNTS_AND_TPM(BAM_FILTER_AND_SORT_BY_NAME.out.bamSortedByName)
 
     SPLIT_BAM_STATS_AND_BED(SAMTOOLS_SORT_DEFAULT.out.bam)
 
-    //TODO:  add step for junctions
-    // Saikou
+    // MAKE SAM file and pass to perl script for junctions
+    SAMTOOLS_BAM_TO_SAM(BAM_FILTER_AND_SORT_BY_NAME.out.bamSortedByDefaultWithIndex, tuple([], []), [])
+    SPLICE_CROSS_READS(SAMTOOLS_BAM_TO_SAM.out.sam)
 
 //TODO Deal with versions from subworkflows
     // ch_versions = ch_versions.mix(

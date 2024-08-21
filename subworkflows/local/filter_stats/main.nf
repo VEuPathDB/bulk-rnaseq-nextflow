@@ -20,9 +20,6 @@ workflow FILTER_STATS {
     main:
     ch_versions = Channel.empty();
 
-
-    // TODO:  This needs to accept bam input which is multiple files (firststrand and second strand)
-
     referenceInput = tuple(params.genome, [])
 
     SAMTOOLS_STATS(bamInput, referenceInput)
@@ -32,5 +29,5 @@ workflow FILTER_STATS {
     emit:
     versions = ch_versions
     stats = SN_FILTER.out.stats
-    total = SN_FILTER.out.total_reads
+    total_reads = SN_FILTER.out.total_reads
 }
