@@ -1,10 +1,10 @@
 Run Name: $runName
 
 <% if (success){
-    out << "## jbrestel/bulkrnaseq execution completed successfully! ##"
+    out << "## veupathdb/bulk-rnaseq-nextflow execution completed successfully! ##"
 } else {
     out << """####################################################
-## jbrestel/bulkrnaseq execution completed unsuccessfully! ##
+## veupathdb/bulk-rnaseq-nextflow execution completed unsuccessfully! ##
 ####################################################
 The exit status of the task that caused the workflow execution to fail was: $exitStatus.
 The full error message was:
@@ -27,5 +27,5 @@ Pipeline Configuration:
 <% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
 
 --
-jbrestel/bulkrnaseq
-https://github.com/jbrestel/bulkrnaseq
+veupathdb/bulk-rnaseq-nextflow
+https://github.com/veupathdb/bulk-rnaseq-nextflow

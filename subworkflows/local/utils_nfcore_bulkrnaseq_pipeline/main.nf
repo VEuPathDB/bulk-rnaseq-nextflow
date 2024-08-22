@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the jbrestel/bulkrnaseq pipeline
+// Subworkflow with functionality specific to the veupathdb/bulk-rnaseq-nextflow pipeline
 //
 
 /*

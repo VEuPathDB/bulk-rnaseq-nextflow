@@ -1,4 +1,4 @@
-# jbrestel/bulkrnaseq: Output
+# veupathdb/bulk-rnaseq-nextflow: Output
 
 ## Introduction
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    jbrestel/bulkrnaseq
+    veupathdb/bulk-rnaseq-nextflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/jbrestel/bulkrnaseq
+    Github : https://github.com/veupathdb/bulk-rnaseq-nextflow
 ----------------------------------------------------------------------------------------
 */
 
