@@ -61,7 +61,7 @@ workflow BULKRNASEQ {
     FASTQCCHECK(FASTQC.out.zip);
     TRIMMOMATIC(ch_samplesheet.join(FASTQCCHECK.out.phred));	
 
-    if(!params.fromIndex) {
+    if(!params.useExistingIndex) {
         HISAT2_BUILD(tuple(params.genome, [params.fasta]),
                      tuple([], []),
                      tuple([], [])

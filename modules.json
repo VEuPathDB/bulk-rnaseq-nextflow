@@ -1,6 +1,6 @@
 {
-    "name": "jbrestel/bulkrnaseq",
-    "homePage": "https://github.com/jbrestel/bulkrnaseq",
+    "name": "veupathdb/bulk-rnaseq-nextflow",
+    "homePage": "https://github.com/veupathdb/bulk-rnaseq-nextflow",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {

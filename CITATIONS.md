@@ -1,4 +1,4 @@
-# jbrestel/bulkrnaseq: Citations
+# veupathdb/bulk-rnaseq-nextflow: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

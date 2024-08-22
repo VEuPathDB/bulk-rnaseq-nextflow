@@ -17,7 +17,7 @@
                         "size": "Large",
                         "weight": "Bolder",
                         "color": "<% if (success) { %>Good<% } else { %>Attention<%} %>",
-                        "text": "jbrestel/bulkrnaseq v${version} - ${runName}",
+                        "text": "veupathdb/bulk-rnaseq-nextflow v${version} - ${runName}",
                         "wrap": true
                     },
                     {
