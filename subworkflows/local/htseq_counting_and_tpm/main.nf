@@ -4,10 +4,10 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { HTSEQ_COUNT as HTSEQCOUNT_FOR    } from '../../../modules/nf-core/htseq/count/main'
-include { HTSEQ_COUNT as HTSEQCOUNT_REV    } from '../../../modules/nf-core/htseq/count/main'
-include { HTSEQ_COUNT as HTSEQCOUNT_FOR_NU } from '../../../modules/nf-core/htseq/count/main'
-include { HTSEQ_COUNT as HTSEQCOUNT_REV_NU } from '../../../modules/nf-core/htseq/count/main'
+include { HTSEQ_COUNT as HTSEQ_COUNT_FOR    } from '../../../modules/nf-core/htseq/count/main'
+include { HTSEQ_COUNT as HTSEQ_COUNT_REV    } from '../../../modules/nf-core/htseq/count/main'
+include { HTSEQ_COUNT as HTSEQ_COUNT_FOR_NU } from '../../../modules/nf-core/htseq/count/main'
+include { HTSEQ_COUNT as HTSEQ_COUNT_REV_NU } from '../../../modules/nf-core/htseq/count/main'
 include { HTSEQ_COUNT                      } from '../../../modules/nf-core/htseq/count/main'
 include { HTSEQ_COUNT as HTSEQ_COUNT_NU    } from '../../../modules/nf-core/htseq/count/main'
 
