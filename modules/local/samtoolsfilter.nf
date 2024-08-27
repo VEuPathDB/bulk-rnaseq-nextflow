@@ -21,7 +21,7 @@ process SAMTOOLS_FILTER {
 
     script:
     def regex = task.ext.regex ?: ''
-    prefix = "${task.ext.prefix}.${meta.id}.${strand}"
+    prefix = task.ext.prefix ? "${task.ext.prefix}.${meta.id}.${strand}" : "${meta.id}"
     newMeta = meta.clone()
     newMeta.id = prefix
 
