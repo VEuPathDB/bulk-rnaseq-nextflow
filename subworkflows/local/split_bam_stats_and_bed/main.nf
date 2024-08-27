@@ -37,8 +37,6 @@ workflow SPLIT_BAM_STATS_AND_BED {
 
     FILTER_STATS(bamInput)
 
-    FILTER_STATS.out.stats.view()
-
     if(params.isStranded) {
         SAMTOOLS_FILTER_UNIQUE(bamInput, 'firststrand')
         SAMTOOLS_FILTER_UNIQUE_SECOND(bamInput, 'secondstrand')
@@ -53,6 +51,8 @@ workflow SPLIT_BAM_STATS_AND_BED {
         SAMTOOLS_FILTER_NU(bamInput, 'unstranded')
         ch_filtered_bams = SAMTOOLS_FILTER_UNIQUE.out.bam.mix(SAMTOOLS_FILTER_NU.out.bam)
     }
+
+    //ch_filtered_bams.view()
 
     FILTER_STATS_UNIQUE_AND_NU(ch_filtered_bams.map{tuple(it[0], it[1], [])})
 

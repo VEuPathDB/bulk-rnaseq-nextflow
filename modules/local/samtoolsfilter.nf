@@ -14,14 +14,14 @@ process SAMTOOLS_FILTER {
     val strand
 
     output:
-    tuple val(newMeta), path("${prefix}*.bam"),             emit: bam
+    tuple val(newMeta), path("${prefix}*.bam"), emit: bam
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def regex = task.ext.regex ?: ''
-    prefix = task.ext.prefix ? "${task.ext.prefix}.${meta.id}.${strand}" : ${meta.id}
+    prefix = "${task.ext.prefix}.${meta.id}.${strand}"
     newMeta = meta.clone()
     newMeta.id = prefix
 
@@ -29,60 +29,60 @@ process SAMTOOLS_FILTER {
 
     if (params.isStranded && meta.single_end && "$strand" == "firststrand") {
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o ${prefix}.bam
-        samtools index ${prefix}.bam
+        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o temp.bam
+        samtools index temp.bam
 
         # https://www.biostars.org/p/14378/ unmapped reads are ignored
-        samtools view -b -F 20 ${prefix}.bam >${prefix}.firststrand.bam
+        samtools view -b -F 20 temp.bam >${prefix}.bam
         """
     }
     else if (params.isStranded && meta.single_end && "$strand" == "secondstrand") {
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o ${prefix}.bam
-        samtools index ${prefix}.bam
+        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o temp.bam
+        samtools index temp.bam
 
         # https://www.biostars.org/p/14378/ unmapped reads are ignored
-        samtools view -b -f 16 ${prefix}.bam >${prefix}.secondstrand.bam
+        samtools view -b -f 16 temp.bam >${prefix}.bam
         """
     }
     else if (params.isStranded && !meta.single_end && "$strand" == "firststrand") {
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o ${prefix}.bam
-        samtools index ${prefix}.bam
+        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o temp.bam
+        samtools index temp.bam
 
         # modified bash script from Istvan Albert to get for.bam and rev.bam
         # https://www.biostars.org/p/92935/
 
         # 1. alignments of the second in pair if they map to the forward strand
         # 2. alignments of the first in pair if they map to the reverse strand
-        samtools view -b -f 163 ${prefix}.bam >fwd1.bam
+        samtools view -b -f 163 temp.bam >fwd1.bam
         samtools index fwd1.bam
 
-        samtools view -b -f 83 ${prefix}.bam >fwd2.bam
+        samtools view -b -f 83 temp.bam >fwd2.bam
         samtools index fwd2.bam
 
-        samtools merge -f ${prefix}.firststrand.bam fwd1.bam fwd2.bam
-        samtools index ${prefix}.firststrand.bam
+        samtools merge -f ${prefix}.bam fwd1.bam fwd2.bam
+        samtools index ${prefix}.bam
         """
     }
     else if (params.isStranded && !meta.single_end && "$strand" == "secondstrand") {
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o ${prefix}.bam
-        samtools index ${prefix}.bam
+        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o temp.bam
+        samtools index temp.bam
 
         # modified bash script from Istvan Albert to get for.bam and rev.bam
         # https://www.biostars.org/p/92935/
 
         # 1. alignments of the second in pair if they map to the reverse strand
         # 2. alignments of the first in pair if they map to the forward strand
-        samtools view -b -f 147 ${prefix}.bam > rev1.bam
+        samtools view -b -f 147 temp.bam > rev1.bam
         samtools index rev1.bam
 
-        samtools view -b -f 99 ${prefix}.bam > rev2.bam
+        samtools view -b -f 99 temp.bam > rev2.bam
         samtools index rev2.bam
 
-        samtools merge -f ${prefix}.secondstrand.bam rev1.bam rev2.bam
-        samtools index ${prefix}.secondstrand.bam
+        samtools merge -f ${prefix}.bam rev1.bam rev2.bam
+        samtools index ${prefix}.bam
         """
     }
     else {
