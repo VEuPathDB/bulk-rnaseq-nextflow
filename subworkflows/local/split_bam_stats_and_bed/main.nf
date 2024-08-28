@@ -52,8 +52,6 @@ workflow SPLIT_BAM_STATS_AND_BED {
         ch_filtered_bams = SAMTOOLS_FILTER_UNIQUE.out.bam.mix(SAMTOOLS_FILTER_NU.out.bam)
     }
 
-    //ch_filtered_bams.view()
-
     FILTER_STATS_UNIQUE_AND_NU(ch_filtered_bams.map{tuple(it[0], it[1], [])})
 
     BEDTOOLS_BAMTOBED(ch_filtered_bams)
