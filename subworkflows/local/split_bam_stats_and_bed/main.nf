@@ -30,7 +30,6 @@ include { MERGE_FILTERED_STATS                                          } from '
 workflow SPLIT_BAM_STATS_AND_BED {
     take:
     bam
-    fastaIndex
 
     main:
 
@@ -46,7 +45,8 @@ workflow SPLIT_BAM_STATS_AND_BED {
         SAMTOOLS_FILTER_UNIQUE_SECOND(bamInput, 'secondstrand')
         SAMTOOLS_FILTER_NU(bamInput, 'firststrand')
         SAMTOOLS_FILTER_NU_SECOND(bamInput, 'secondstrand')
-        ch_filtered_bams = SAMTOOLS_FILTER_UNIQUE.out.bam.mix(SAMTOOLS_FILTER_UNIQUE_SECOND.out.bam,
+	// Mixes bams from samples together. No longer per sample
+	ch_filtered_bams = SAMTOOLS_FILTER_UNIQUE.out.bam.mix(SAMTOOLS_FILTER_UNIQUE_SECOND.out.bam,
                                                               SAMTOOLS_FILTER_NU.out.bam,
                                                               SAMTOOLS_FILTER_NU_SECOND.out.bam)
     }
@@ -58,18 +58,10 @@ workflow SPLIT_BAM_STATS_AND_BED {
 
     FILTER_STATS_UNIQUE_AND_NU(ch_filtered_bams.map{tuple(it[0], it[1], [])})
 
-    BEDTOOLS_BAMTOBED(ch_filtered_bams)
-    BEDTOOLS_BAMTOBED_FULL_BAM(bamInput.map{tuple(it[0],it[1])})    
-
-    BEDTOOLS_GENOME_COVERAGE(BEDTOOLS_BAMTOBED.out.bed,fastaIndex)
-    BEDTOOLS_GENOME_COVERAGE_FULL_BAM(BEDTOOLS_BAMTOBED_FULL_BAM.out.bed,fastaIndex)            
-
-    // TODO:  add step to merge stats and calculate percent coverage
-    MERGE_FILTERED_STATS(bamInput,
-                         ch_filtered_bams.collect{it[1]},
-			 BEDTOOLS_GENOME_COVERAGE.out.coverage.collect{it[1]},
-			 BEDTOOLS_GENOME_COVERAGE_FULL_BAM.out.coverage.collect{it[1]},
- 			 FILTER_STATS.out.total_reads)
+    // Keeps files, meta.id, total_reads, and bamInput consistent
+    MERGE_FILTERED_STATS(ch_filtered_bams.collect{it[1]},
+                         FILTER_STATS.out.stats.join(FILTER_STATS.out.total_reads, by: [0]).join(bamInput, by: [0]),
+                         FILTER_STATS_UNIQUE_AND_NU.out.stats.collect{it[1]})
 
     emit:
     stats = MERGE_FILTERED_STATS.out.stats
