@@ -14,7 +14,7 @@ process SAMTOOLS_FILTER {
     val strand
 
     output:
-    tuple val(newMeta), path("${prefix}*.bam"), emit: bam
+    tuple val(newMeta), path("${prefix}*.bam"), val(meta), emit: bam
 
     when:
     task.ext.when == null || task.ext.when
