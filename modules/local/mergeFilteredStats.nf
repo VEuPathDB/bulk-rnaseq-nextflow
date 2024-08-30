@@ -47,9 +47,9 @@ process MERGE_FILTERED_STATS {
         for file in ./*.bam; do        
             bedtools genomecov -ibam \$file > \$file.cov
         done
-        mergeStats.pl --nuFile nu.*.bam.stats* --nuCoverage nu.*.cov \
+        mergeStats.pl --nuFile nu.*.stats* --nuCoverage nu.*.cov \
                       --fullFile ${meta.id}.stats* --fullCoverage ${fullBam}.cov \
-                      --unFile unique.*.bam.stats* --unCoverage unique.*.cov \
+                      --unFile unique.*.stats* --unCoverage unique.*.cov \
                       --totalReads ${totalReads} \
                       --outputFile mappingStats.txt
         """
