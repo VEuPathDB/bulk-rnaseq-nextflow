@@ -23,7 +23,9 @@ process MERGE_FILTERED_STATS {
         mkdir hold
         mv $fullBam hold
         mv *${meta.id}* hold
-        rm *.*
+        if [ -f "*.*" ]; then
+            rm *.*
+        done
         mv hold/* .
         for file in ./*.bam; do        
             bedtools genomecov -ibam \$file > \$file.cov
@@ -42,7 +44,9 @@ process MERGE_FILTERED_STATS {
         mkdir hold
         mv $fullBam hold
         mv *${meta.id}* hold
-        rm *.*
+        if [ -f "*.*" ]; then
+            rm *.*
+        done
         mv hold/* .
         for file in ./*.bam; do        
             bedtools genomecov -ibam \$file > \$file.cov
