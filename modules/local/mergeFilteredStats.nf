@@ -25,7 +25,7 @@ process MERGE_FILTERED_STATS {
         mv *${meta.id}* hold
         if [ -f "*.*" ]; then
             rm *.*
-        done
+        fi
         mv hold/* .
         for file in ./*.bam; do        
             bedtools genomecov -ibam \$file > \$file.cov
@@ -46,7 +46,7 @@ process MERGE_FILTERED_STATS {
         mv *${meta.id}* hold
         if [ -f "*.*" ]; then
             rm *.*
-        done
+        fi
         mv hold/* .
         for file in ./*.bam; do        
             bedtools genomecov -ibam \$file > \$file.cov
