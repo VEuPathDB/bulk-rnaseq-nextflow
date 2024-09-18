@@ -74,8 +74,6 @@ process HISAT2_ALIGN {
             --threads $task.cpus \\
             $seq_center \\
             $unaligned \\
-            --no-mixed \\
-            --no-discordant \\
             $args
         samtools view -bS -F 256 tmp.sam > ${prefix}.bam
         rm tmp.sam
