@@ -7,7 +7,7 @@ process HTSEQ_COUNT {
         'https://depot.galaxyproject.org/singularity/htseq:2.0.3--py310ha14a713_0':
         'biocontainers/htseq:2.0.3--py310ha14a713_0' }"
 
-    publishDir "${params.outdir}/ReadCounts/${meta.id}", mode: 'copy', pattern: "*.txt*"
+    publishDir "${params.outdir}/${meta.id}", mode: 'copy', pattern: "*.txt*"
 
 
     input:
