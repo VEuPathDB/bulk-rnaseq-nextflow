@@ -7,8 +7,10 @@ process BEDTOOLS_BAMTOBED {
         'https://depot.galaxyproject.org/singularity/bedtools:2.31.1--hf5e1c6e_0' :
         'biocontainers/bedtools:2.31.1--hf5e1c6e_0' }"
 
+    publishDir "${params.outdir}/${bamMeta.id}", mode: 'copy', pattern: "*bed*"
+
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), val(bamMeta)
 
     output:
     tuple val(meta), path("*.bed"), emit: bed

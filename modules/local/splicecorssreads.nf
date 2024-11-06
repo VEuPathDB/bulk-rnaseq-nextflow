@@ -1,5 +1,7 @@
 process SPLICE_CROSS_READS {
 
+    publishDir "${params.outdir}/${meta.id}", mode: 'copy', pattern: "*.tab*"
+
     tag "$meta.id"
     label 'process_high'
 
@@ -20,7 +22,7 @@ process SPLICE_CROSS_READS {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    samToJunctions.pl --input_file ${sam} --output_file ${prefix}_junctions.tab
+    samToJunctions.pl --input_file ${sam} --output_file junctions.tab
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

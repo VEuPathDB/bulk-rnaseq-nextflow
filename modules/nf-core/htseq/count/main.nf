@@ -7,6 +7,9 @@ process HTSEQ_COUNT {
         'https://depot.galaxyproject.org/singularity/htseq:2.0.3--py310ha14a713_0':
         'biocontainers/htseq:2.0.3--py310ha14a713_0' }"
 
+    publishDir "${params.outdir}/${meta.id}", mode: 'copy', pattern: "*.txt*"
+
+
     input:
     tuple val(meta), path(input), path(index)
     tuple val(meta2), path(gtf)
@@ -28,7 +31,7 @@ process HTSEQ_COUNT {
         ${input} \\
         ${gtf} \\
         ${args} \\
-        > ${sampleId}_${prefix}.txt
+        > ${prefix}.txt
 
 
     cat <<-END_VERSIONS > versions.yml
