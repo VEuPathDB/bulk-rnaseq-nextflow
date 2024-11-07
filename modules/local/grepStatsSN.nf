@@ -1,5 +1,5 @@
 process SN_FILTER {
-    tag '$bam'
+    tag "$meta.id"
     label 'process_single'
 
     container 'docker.io/perl:bookworm'

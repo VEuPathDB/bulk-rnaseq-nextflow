@@ -5,6 +5,8 @@ process MERGE_FILTERED_STATS {
     conda "${moduleDir}/environment.yml"
     container 'docker.io/veupathdb/shortreadaligner:latest'
 
+    publishDir "${params.outdir}/${meta.id}", mode: 'copy', pattern: "*mappingStats.txt*"
+
     input:
       path(bams)
       tuple val(meta), path(fullStats), val(totalReads), path(fullBam), val(extra)
