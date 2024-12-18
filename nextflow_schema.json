@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/jbrestel/bulkrnaseq/master/nextflow_schema.json",
-    "title": "jbrestel/bulkrnaseq pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/veupathdb/bulk-rnaseq-nextflow/master/nextflow_schema.json",
+    "title": "veupathdb/bulk-rnaseq-nextflow pipeline parameters",
     "description": "Bulk RNASeq workflow",
     "type": "object",
     "definitions": {

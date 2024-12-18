@@ -1,0 +1,5 @@
+sample,fastq_1,fastq_2
+gametocyteII,/home/rdemko/workspace/testzone/bulkrnaseq/bulk-rnaseq-nextflow/data/Fastq/gametocyteII_chr1_1.fq.gz,/home/rdemko/workspace/testzone/bulkrnaseq/bulk-rnaseq-nextflow/data/Fastq/gametocyteII_chr1_2.fq.gz
+gametocyteV,/home/rdemko/workspace/testzone/bulkrnaseq/bulk-rnaseq-nextflow/data/Fastq/gametocyteV_chr1_1.fq.gz,/home/rdemko/workspace/testzone/bulkrnaseq/bulk-rnaseq-nextflow/data/Fastq/gametocyteV_chr1_2.fq.gz
+lateTroph,/home/rdemko/workspace/testzone/bulkrnaseq/bulk-rnaseq-nextflow/data/Fastq/lateTroph_chr1_1.fq.gz,/home/rdemko/workspace/testzone/bulkrnaseq/bulk-rnaseq-nextflow/data/Fastq/lateTroph_chr1_2.fq.gz
+schizont,/home/rdemko/workspace/testzone/bulkrnaseq/bulk-rnaseq-nextflow/data/Fastq/schizont_chr1_1.fq.gz,/home/rdemko/workspace/testzone/bulkrnaseq/bulk-rnaseq-nextflow/data/Fastq/schizont_chr1_2.fq.gz
