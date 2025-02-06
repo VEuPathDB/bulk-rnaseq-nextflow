@@ -37,6 +37,7 @@ include { SAMTOOLS_VIEW as SAMTOOLS_BAM_TO_SAM      } from '../modules/nf-core/s
 
 include { SPLICE_CROSS_READS                        } from '../modules/local/splicecorssreads.nf'
 
+include { SAMTOOLS_FAIDX                            } from '../modules/nf-core/samtools/faidx/main'
 
 // TODO Junctions
 
@@ -78,15 +79,16 @@ workflow BULKRNASEQ {
         );
     }
 
+
+
     SAMTOOLS_SORT_DEFAULT(HISAT2_ALIGN.out.bam, tuple([], []))
 
     BAM_FILTER_AND_SORT_BY_NAME(SAMTOOLS_SORT_DEFAULT.out.bam)
 
     HTSEQ_COUNTS_AND_TPM(BAM_FILTER_AND_SORT_BY_NAME.out.bamSortedByName)
 
-    SPLIT_BAM_STATS_AND_BED(SAMTOOLS_SORT_DEFAULT.out.bam)
-
-    SPLIT_BAM_STATS_AND_BED.out.stats.view()
+    SAMTOOLS_FAIDX(tuple([],params.fasta))
+    SPLIT_BAM_STATS_AND_BED(SAMTOOLS_SORT_DEFAULT.out.bam,SAMTOOLS_FAIDX.out.fai)
 
     // MAKE SAM file and pass to perl script for junctions
     SAMTOOLS_BAM_TO_SAM(BAM_FILTER_AND_SORT_BY_NAME.out.bamSortedByDefaultWithIndex, tuple([], []), [])
