@@ -30,6 +30,7 @@ include { MERGE_FILTERED_STATS                                          } from '
 workflow SPLIT_BAM_STATS_AND_BED {
     take:
     bam
+    fastaIndex
 
     main:
 

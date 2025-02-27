@@ -88,7 +88,7 @@ workflow BULKRNASEQ {
     HTSEQ_COUNTS_AND_TPM(BAM_FILTER_AND_SORT_BY_NAME.out.bamSortedByName)
 
     SAMTOOLS_FAIDX(tuple([],params.fasta))
-    SPLIT_BAM_STATS_AND_BED(SAMTOOLS_SORT_DEFAULT.out.bam,SAMTOOLS_FAIDX.out.fai)
+    SPLIT_BAM_STATS_AND_BED(SAMTOOLS_SORT_DEFAULT.out.bam, SAMTOOLS_FAIDX.out.fai)
 
     // MAKE SAM file and pass to perl script for junctions
     SAMTOOLS_BAM_TO_SAM(BAM_FILTER_AND_SORT_BY_NAME.out.bamSortedByDefaultWithIndex, tuple([], []), [])
