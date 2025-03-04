@@ -4,7 +4,7 @@ process HISAT2_ALIGN {
 
     // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
     conda "${moduleDir}/environment.yml"
-    container 'rdemko2332/hisat2'
+    container 'rdemko2332/hisat2:original'
 
     input:
     tuple val(meta), path(reads)
