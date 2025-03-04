@@ -2,8 +2,6 @@ process HISAT2_ALIGN {
     tag "$meta.id"
     label 'process_high'
 
-     scratch true
-
     // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -41,6 +39,7 @@ process HISAT2_ALIGN {
         def unaligned = params.save_unaligned ? "--un-gz ${prefix}.unmapped.fastq.gz" : ''
         """
         INDEX=`find -L ./ -name "*.1.ht2" | sed 's/\\.1.ht2\$//'`
+        mkdir ./tmp
         hisat2 \\
             -x \$INDEX \\
             -U $reads \\
@@ -51,6 +50,7 @@ process HISAT2_ALIGN {
             --threads $task.cpus \\
             $seq_center \\
             $unaligned \\
+            --temp-directory ./tmp \\
             $args
         samtools view -bS -F 256 tmp.sam > ${prefix}.bam
         rm tmp.sam
