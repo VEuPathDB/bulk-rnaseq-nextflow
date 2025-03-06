@@ -1,7 +1,7 @@
 process SPLICE_CROSS_READS {
 
     publishDir "${params.outdir}/${meta.id}", mode: 'copy', pattern: "*.tab*"
-    publishDir ${params.outdir}, mode: 'copy', pattern: "*_junctions.tab"
+    publishDir "${params.outdir}", mode: 'copy', pattern: "*_junctions.tab"
 
     tag "$meta.id"
     label 'process_high'
