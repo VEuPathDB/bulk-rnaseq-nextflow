@@ -21,9 +21,17 @@ process SAMTOOLS_FILTER {
 
     script:
     def regex = task.ext.regex ?: ''
+
+    // Prefix here is how we uniquely identify a split file
     prefix = task.ext.prefix ? "${task.ext.prefix}.${meta.id}.${strand}" : "${meta.id}"
     newMeta = meta.clone()
-    newMeta.id = prefix
+    newMeta.prefix = prefix
+
+    // this will be what is written to output
+    newMeta.bedfileName = "${task.ext.prefix}.${strand}"
+    if("$strand" == "unstranded") {
+        newMeta.bedfileName = "${task.ext.prefix}"
+    }
 
     if ("$input" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
 
