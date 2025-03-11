@@ -11,7 +11,7 @@ process SPLICE_CROSS_READS {
     tuple val(meta), path(sam)
 
     output:
-    path("*junctions.tab")
+    path("junctions.tab")
 
 
     when:
@@ -23,8 +23,7 @@ process SPLICE_CROSS_READS {
 
     """
     samToJunctions.pl --input_file ${sam} --output_file junctions.tab
-    cp junctions.tab ${meta.id}_junctions.tab
-
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         echo 1
