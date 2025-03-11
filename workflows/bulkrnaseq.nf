@@ -40,7 +40,7 @@ include { SPLICE_CROSS_READS                        } from '../modules/local/spl
 include { SAMTOOLS_FAIDX                            } from '../modules/nf-core/samtools/faidx/main'
 
 // I want this to fail during testing to gain access to the work directory. This will be removed
-include { ERROR_HERE                            } from '../modules/nf-core/error/here/main'
+//include { ERROR_HERE                            } from '../modules/nf-core/error/here/main'
 
 // TODO Junctions
 

@@ -60,7 +60,13 @@ workflow SPLIT_BAM_STATS_AND_BED {
     FILTER_STATS_UNIQUE_AND_NU(ch_filtered_bams.map{tuple(it[0], it[1], [])})
 
     BEDTOOLS_BAMTOBED(ch_filtered_bams)
-    BEDTOOLS_BAMTOBED_FULL_BAM(bamInput.map{tuple(it[0],it[1])})
+
+    BEDTOOLS_BAMTOBED_FULL_BAM(bamInput.map {
+        newMeta = it[0].clone();
+        newMeta.sampleId = newMeta.id
+        newMeta.bedfileName = newMeta.id
+        tuple(newMeta, it[1])}
+    )
 
     BEDTOOLS_GENOME_COVERAGE(BEDTOOLS_BAMTOBED.out.bed,fastaIndex)
     BEDTOOLS_GENOME_COVERAGE_FULL_BAM(BEDTOOLS_BAMTOBED_FULL_BAM.out.bed,fastaIndex)
@@ -69,6 +75,7 @@ workflow SPLIT_BAM_STATS_AND_BED {
     MERGE_FILTERED_STATS(ch_filtered_bams.collect{it[1]},
                          FILTER_STATS.out.stats.join(FILTER_STATS.out.total_reads, by: [0]).join(bamInput, by: [0]),
                          FILTER_STATS_UNIQUE_AND_NU.out.stats.collect{it[1]})
+
 
     emit:
     stats = MERGE_FILTERED_STATS.out.stats

@@ -32,11 +32,11 @@ process MERGE_FILTERED_STATS {
         for file in ./*.bam; do        
             bedtools genomecov -ibam \$file > \$file.cov
         done
-        mergeStrandedStats.pl --nuFirstFile nu.*.firststrand.stats* --nuFirstCoverage nu.*.firststrand.bam.cov \
-                              --nuSecondFile nu.*.secondstrand.stats* --nuSecondCoverage nu.*.secondstrand.bam.cov \
+        mergeStrandedStats.pl --nuFirstFile non_unique_results.*.firststrand.stats* --nuFirstCoverage non_unique_results.*.firststrand.bam.cov \
+                              --nuSecondFile non_unique_results.*.secondstrand.stats* --nuSecondCoverage non_unique_results.*.secondstrand.bam.cov \
                               --fullFile ${meta.id}.stats* --fullCoverage ${fullBam}.cov \
-                              --unFirstFile unique.*.firststrand.stats* --unFirstCoverage unique.*.firststrand.bam.cov \
-                              --unSecondFile unique.*.secondstrand.stats* --unSecondCoverage unique.*.secondstrand.bam.cov \
+                              --unFirstFile unique_results.*.firststrand.stats* --unFirstCoverage unique_results.*.firststrand.bam.cov \
+                              --unSecondFile unique_results.*.secondstrand.stats* --unSecondCoverage unique_results.*.secondstrand.bam.cov \
                               --totalReads ${totalReads} \
                               --outputFile mappingStats.txt
         """
@@ -53,9 +53,9 @@ process MERGE_FILTERED_STATS {
         for file in ./*.bam; do        
             bedtools genomecov -ibam \$file > \$file.cov
         done
-        mergeStats.pl --nuFile nu.*.stats* --nuCoverage nu.*.cov \
+        mergeStats.pl --nuFile non_unique_results.*.stats* --nuCoverage non_unique_results.*.cov \
                       --fullFile ${meta.id}.stats* --fullCoverage ${fullBam}.cov \
-                      --unFile unique.*.stats* --unCoverage unique.*.cov \
+                      --unFile unique_results.*.stats* --unCoverage unique_results.*.cov \
                       --totalReads ${totalReads} \
                       --outputFile mappingStats.txt
         """

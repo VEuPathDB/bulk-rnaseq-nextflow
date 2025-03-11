@@ -14,7 +14,7 @@ process SAMTOOLS_FILTER {
     val strand
 
     output:
-    tuple val(newMeta), path("${prefix}*.bam"), val(meta.id), emit: bam
+    tuple val(newMeta), path("${prefix}*.bam"), emit: bam
 
     when:
     task.ext.when == null || task.ext.when
@@ -23,9 +23,10 @@ process SAMTOOLS_FILTER {
     def regex = task.ext.regex ?: ''
 
     // Prefix here is how we uniquely identify a split file
-    prefix = task.ext.prefix ? "${task.ext.prefix}.${meta.id}.${strand}" : "${meta.id}"
+    prefix = task.ext.prefix ? "${task.ext.prefix}.${meta.id}.${strand}" : "${meta.id}.${strand}"
     newMeta = meta.clone()
-    newMeta.prefix = prefix
+    newMeta.sampleId = "${meta.id}"
+    newMeta.id = prefix
 
     // this will be what is written to output
     newMeta.bedfileName = "${task.ext.prefix}.${strand}"
