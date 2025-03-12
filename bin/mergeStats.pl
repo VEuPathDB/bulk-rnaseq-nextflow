@@ -3,89 +3,112 @@
 use strict;
 
 use Getopt::Long;
+
+use File::Basename;
+
 use Data::Dumper;
 
-my ($nuFile, $nuCoverage, $fullFile, $fullCoverage, $unFile, $unCoverage, $totalReads, $outputFile);
+my ($sampleId, $outputFile, %stats);
 
-&GetOptions("nuFile=s"=> \$nuFile,
-	    "nuCoverage=s"=> \$nuCoverage,
-	    "fullFile=s"=> \$fullFile,
-	    "fullCoverage=s"=> \$fullCoverage,	    
-	    "unFile=s"=> \$unFile,
-	    "unCoverage=s"=> \$unCoverage,
-            "totalReads=i" => \$totalReads,
+&GetOptions("sampleId=s"=> \$sampleId,
             "outputFile=s" => \$outputFile);
 
-&printHeaderLine($outputFile);
+my @HEADERS  = ("file",
+                "coverage",
+                "mapped",
+                "number_reads_mapped",
+                "average_read_length"
+    );
 
-# Non Unique
-my $nuCov = &getCoverage($nuCoverage);
-my %nuStatsHash = &getStats($nuFile);
-&printStats($outputFile,'non_unique_results.bam',$nuCov,$totalReads,\%nuStatsHash);
+my $fullStats = "${sampleId}.stats.filtered";
+my $fullCov = "${sampleId}.cov";
 
-# Full 
-my $fullCov = &getCoverage($fullCoverage);
-my %fullStatsHash = &getStats($fullFile);
-&printStats($outputFile,'results.bam',$fullCov,$totalReads,\%fullStatsHash);
+&readFile($sampleId, $fullStats, \%stats, undef);
+&readFile($sampleId, $fullCov, \%stats, undef);
+&addPctMappedReads($sampleId, $sampleId, \%stats);
 
-# Unique
-my $unCov = &getCoverage($unCoverage);
-my %unStatsHash = &getStats($unFile);
-&printStats($outputFile,'unique_results.bam',$unCov,$totalReads,\%unStatsHash);
+$stats{"${sampleId}"}->{file} = "results.bam";
 
+my $totalReads = $stats{"${sampleId}"}->{"raw total sequences"};
+
+my @otherFiles = glob("*unique*.{cov,filtered}");
+
+foreach my $otherFile (@otherFiles) {
+    my $otherFileName = $otherFile;
+
+    $otherFile =~ s/\.cov$//;
+    $otherFile =~ s/\.stats.filtered$//;
+
+    &readFile($otherFile, $otherFileName, \%stats, $totalReads);
+    &addFileKey($otherFile, $otherFileName, \%stats);
+    &addPctMappedReads($otherFile, $sampleId, \%stats);
+}
+
+
+my $outFh;
+open($outFh, ">$outputFile") or die "Cannot open file $outputFile for writing: $!";
+
+print $outFh join("\t", @HEADERS) . "\n";
+&printStatsHash($outFh, \%stats, \@HEADERS);
+close $outFh;
 #====================== Subroutines =======================================================================
 
-sub printHeaderLine {
-    my ($output) = @_;
-    open (OUT, '>', $output);
-    print OUT "file\tcoverage\tmapped\tnumber_reads_mapped\taverage_read_length\n";
-    close OUT;
+sub printStatsHash {
+    my ($fh, $statsHash, $headers) = @_;
+
+    foreach my $key (keys %$statsHash) {
+        my @values = map { $statsHash->{$key}->{$_} } @$headers;
+        print $outFh join("\t", @values) . "\n";
+    }
 }
 
-sub printStats {
-    my ($output,$fileName,$coverage,$totalReads,$stats) = @_;
-    open (OUT, '>>', $output);
-    my %statsHash = %{ $stats };
-    my $number_reads_mapped = $statsHash{"reads mapped"};
-    my $average_length = $statsHash{"average length"};
-    my $percent_mapped = $number_reads_mapped / $totalReads;
-    print OUT "$fileName\t$coverage\t$percent_mapped\t$number_reads_mapped\t$average_length\n";
-    close OUT;
+sub addPctMappedReads {
+    my ($key, $fullKey, $statsHash) = @_;
+
+    my $totalReads = $statsHash->{$fullKey}->{"raw total sequences"};
+    my $mappedReads = $statsHash->{$key}->{"number_reads_mapped"};
+
+    $statsHash->{$key}->{"mapped"} = $mappedReads / $totalReads;
+
 }
 
-sub getCoverage {
-    my ($covFile) = @_;
-    open(my $data, '<', $covFile) || die "Could not open file $covFile: $!";
-    my $genomeCoverage = 0;
-    my $count = 0;    
-    while (my $line = <$data>) {
-	chomp $line;
-	if ($line =~ /^genome/) {
-	    my ($identifier, $depth, $freq, $size, $proportion) = split(/\t/, $line);
-	    $genomeCoverage += ($depth*$freq);
-            $count += $freq;
+sub addFileKey {
+    my ($key, $file, $statsHash) = @_;
+
+    my $fileBase = basename $file;
+    my ($align, $sample, $strand, $suffixes) = split(/\./, $fileBase);
+
+    my $fileValue = "${align}_results.bam";
+    if($strand eq 'firststrand' || $strand eq 'secondstrand') {
+        $fileValue = "${align}_results.${strand}.bam";
+    }
+
+    $statsHash->{$key}->{"file"} = $fileValue;
+}
+
+
+sub readFile {
+    my ($uniqueId, $file, $statsHash, $totalReads) = @_;
+
+    my $fileBase = basename $file;
+
+    open(FILE, $file) or die "Cannot open file $file for reading: $!";
+    while(<FILE>) {
+        chomp;
+        my ($key, $value) = split(/\t/, $_);
+
+        if($key eq 'reads mapped') {
+            $statsHash->{$uniqueId}->{number_reads_mapped} = $value;
+        }
+        elsif($key eq 'average length') {
+            $statsHash->{$uniqueId}->{average_read_length} = $value;
+        }
+        else {
+            $statsHash->{$uniqueId}->{$key} = $value;
         }
     }
-    close $data;
-    return ($genomeCoverage/$count);
-}
 
-sub getStats {
-    my ($statFile) = @_;
-    open(my $data, '<', $statFile) || die "Could not open file $statFile: $!";
-    my %statsHash;
-    while (my $line = <$data>) {
-	chomp $line;
-        my ($attr, $value) = split(/\t/, $line);
-        $attr =~ s/\:$//;
-        if ($attr eq "raw total sequences" || $attr eq "reads mapped" || $attr eq "average length") {
-            $statsHash{$attr} = $value;
-        }
-    }
-    close $data;
-    return %statsHash;
+    close FILE;
 }
-
-#====================================================================================================
 
 1;

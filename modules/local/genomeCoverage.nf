@@ -20,7 +20,8 @@ process BEDTOOLS_GENOME_COVERAGE {
 
     script:
     """
-    bedtools genomecov -i $bed -g $index > ${meta.id}.cov
+    bedtools genomecov -i $bed -g $index | genomeCov.awk > ${meta.id}.cov
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

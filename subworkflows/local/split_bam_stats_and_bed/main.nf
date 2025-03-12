@@ -46,38 +46,77 @@ workflow SPLIT_BAM_STATS_AND_BED {
         SAMTOOLS_FILTER_UNIQUE_SECOND(bamInput, 'secondstrand')
         SAMTOOLS_FILTER_NU(bamInput, 'firststrand')
         SAMTOOLS_FILTER_NU_SECOND(bamInput, 'secondstrand')
-	// Mixes bams from samples together. No longer per sample
-	ch_filtered_bams = SAMTOOLS_FILTER_UNIQUE.out.bam.mix(SAMTOOLS_FILTER_UNIQUE_SECOND.out.bam,
-                                                              SAMTOOLS_FILTER_NU.out.bam,
-                                                              SAMTOOLS_FILTER_NU_SECOND.out.bam)
+
+        // Mixes bams from samples together. No longer per sample
+        ch_filtered_bams = ch_filtered_bams.mix(
+            addMetaData(SAMTOOLS_FILTER_UNIQUE.out.bam, "firststrand", "unique"),
+            addMetaData(SAMTOOLS_FILTER_UNIQUE_SECOND.out.bam, "secondstrand", "unique"),
+            addMetaData(SAMTOOLS_FILTER_NU.out.bam, "firststrand", "nu"),
+            addMetaData(SAMTOOLS_FILTER_NU_SECOND.out.bam, "secondstrand", "nu")
+        )
     }
     else {
         SAMTOOLS_FILTER_UNIQUE(bamInput, 'unstranded')
         SAMTOOLS_FILTER_NU(bamInput, 'unstranded')
-        ch_filtered_bams = SAMTOOLS_FILTER_UNIQUE.out.bam.mix(SAMTOOLS_FILTER_NU.out.bam)
+        ch_filtered_bams = ch_filtered_bams.mix(
+            addMetaData(SAMTOOLS_FILTER_UNIQUE.out.bam, "unstranded", "unique"),
+            addMetaData(SAMTOOLS_FILTER_NU.out.bam, "unstranded", "nu")
+        )
     }
+
+
+
 
     FILTER_STATS_UNIQUE_AND_NU(ch_filtered_bams.map{tuple(it[0], it[1], [])})
 
     BEDTOOLS_BAMTOBED(ch_filtered_bams)
-
-    BEDTOOLS_BAMTOBED_FULL_BAM(bamInput.map {
-        newMeta = it[0].clone();
-        newMeta.sampleId = newMeta.id
-        newMeta.bedfileName = newMeta.id
-        tuple(newMeta, it[1])}
-    )
+    BEDTOOLS_BAMTOBED_FULL_BAM(addMetaData(bamInput, "both", "all"))
 
     BEDTOOLS_GENOME_COVERAGE(BEDTOOLS_BAMTOBED.out.bed,fastaIndex)
     BEDTOOLS_GENOME_COVERAGE_FULL_BAM(BEDTOOLS_BAMTOBED_FULL_BAM.out.bed,fastaIndex)
 
-    // Keeps files, meta.id, total_reads, and bamInput consistent
-    MERGE_FILTERED_STATS(ch_filtered_bams.collect{it[1]},
-                         FILTER_STATS.out.stats.join(FILTER_STATS.out.total_reads, by: [0]).join(bamInput, by: [0]),
-                         FILTER_STATS_UNIQUE_AND_NU.out.stats.collect{it[1]})
+    mergeStatsInput = BEDTOOLS_GENOME_COVERAGE.out.coverage.mix(
+        BEDTOOLS_GENOME_COVERAGE_FULL_BAM.out.coverage,
+        FILTER_STATS_UNIQUE_AND_NU.out.stats,
+        addMetaData(FILTER_STATS.out.stats, "both", "all")
+    ).map{ tuple(it[0].sampleId, it[1])}
+        .groupTuple()
 
+
+    MERGE_FILTERED_STATS(mergeStatsInput)
 
     emit:
     stats = MERGE_FILTERED_STATS.out.stats
     versions = ch_versions
+}
+
+
+
+def addMetaData(ch, strand, align) {
+    return ch.map {
+        meta = it[0]
+        def newId = meta.id
+        def bedfilename = "";
+        def alignPretty = "all_results";
+
+        if(align == "unique") {
+            newId = "unique_results." + meta.id + "." + strand
+            alignPretty = "unique_results";
+        }
+        if(align == "nu"){
+            newId = "non_unique_results." + meta.id + "." + strand
+            alignPretty = "non_unique_results";
+
+        }
+        newMeta = meta.clone();
+        newMeta.sampleId = meta.id
+        newMeta.id = newId
+
+        newMeta.bedfileName = alignPretty + "." + strand
+        if(strand == "unstranded") {
+            newMeta.bedfileName = alignPretty
+        }
+        tuple(newMeta, it[1])
+
+    }
 }

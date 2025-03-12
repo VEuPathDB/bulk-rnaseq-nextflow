@@ -14,7 +14,7 @@ process SAMTOOLS_FILTER {
     val strand
 
     output:
-    tuple val(newMeta), path("${prefix}*.bam"), emit: bam
+    tuple val(meta), path("${prefix}*.bam"), emit: bam
 
     when:
     task.ext.when == null || task.ext.when
@@ -24,15 +24,6 @@ process SAMTOOLS_FILTER {
 
     // Prefix here is how we uniquely identify a split file
     prefix = task.ext.prefix ? "${task.ext.prefix}.${meta.id}.${strand}" : "${meta.id}.${strand}"
-    newMeta = meta.clone()
-    newMeta.sampleId = "${meta.id}"
-    newMeta.id = prefix
-
-    // this will be what is written to output
-    newMeta.bedfileName = "${task.ext.prefix}.${strand}"
-    if("$strand" == "unstranded") {
-        newMeta.bedfileName = "${task.ext.prefix}"
-    }
 
     if ("$input" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
 
