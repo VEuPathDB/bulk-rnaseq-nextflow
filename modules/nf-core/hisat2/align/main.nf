@@ -50,7 +50,7 @@ process HISAT2_ALIGN {
             $unaligned \\
             --temp-directory ./tmp \\
             $args
-        samtools view -bS -F 256 tmp.sam > ${prefix}.bam
+        samtools view -bS -F 4 tmp.sam > ${prefix}.bam
         rm tmp.sam
 
         cat <<-END_VERSIONS > versions.yml
