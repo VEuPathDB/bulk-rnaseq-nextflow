@@ -29,7 +29,7 @@ process BEDTOOLS_BAMTOBED {
         -i $bam \\
         > tmp.bed
 
-    awk '{print \$1, \$2, \$3, \$5}' tmp.bed > ${prefix}.bed
+    awk '{print \$1 "\t" \$2 "\t" \$3 "\t" \$5}' tmp.bed > ${prefix}.bed
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
