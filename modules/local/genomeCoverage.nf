@@ -7,6 +7,8 @@ process BEDTOOLS_GENOME_COVERAGE {
         'https://depot.galaxyproject.org/singularity/bedtools:2.31.1--hf5e1c6e_0' :
         'biocontainers/bedtools:2.31.1--hf5e1c6e_0' }"
 
+    publishDir "${params.outdir}/${meta.sampleId}", mode: 'copy', pattern: "*bed*"
+
     input:
     tuple val(meta), path(bed)
     tuple val(fastaMeta), path(index)    
@@ -21,6 +23,7 @@ process BEDTOOLS_GENOME_COVERAGE {
     script:
     """
     bedtools genomecov -i $bed -g $index | genomeCov.awk > ${meta.id}.cov
+    cp ${meta.id}.cov ${bed}
 
 
     cat <<-END_VERSIONS > versions.yml
