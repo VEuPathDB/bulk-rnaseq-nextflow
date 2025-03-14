@@ -78,9 +78,9 @@ sub addFileKey {
     my $fileBase = basename $file;
     my ($align, $sample, $strand, $suffixes) = split(/\./, $fileBase);
 
-    my $fileValue = "${align}_results.bam";
+    my $fileValue = "${align}.bam";
     if($strand eq 'firststrand' || $strand eq 'secondstrand') {
-        $fileValue = "${align}_results.${strand}.bam";
+        $fileValue = "${align}.${strand}.bam";
     }
 
     $statsHash->{$key}->{"file"} = $fileValue;

@@ -14,8 +14,9 @@ include { SAMTOOLS_FILTER as SAMTOOLS_FILTER_NU_SECOND                  } from '
 include { FILTER_STATS                                                  } from '../filter_stats'
 include { FILTER_STATS as FILTER_STATS_UNIQUE_AND_NU                    } from '../filter_stats'
 
-include { BEDTOOLS_BAMTOBED                                             } from '../../../modules/nf-core/bedtools/bamtobed/main'
-include { BEDTOOLS_BAMTOBED as BEDTOOLS_BAMTOBED_FULL_BAM               } from '../../../modules/nf-core/bedtools/bamtobed/main'
+
+include { BEDTOOLS_GENOME_COVERAGE_BG                                   } from '../../../modules/local/genomeCoverage.nf'
+
 include { BEDTOOLS_GENOME_COVERAGE                                      } from '../../../modules/local/genomeCoverage.nf'
 include { BEDTOOLS_GENOME_COVERAGE as BEDTOOLS_GENOME_COVERAGE_FULL_BAM } from '../../../modules/local/genomeCoverage.nf'
 
@@ -69,11 +70,11 @@ workflow SPLIT_BAM_STATS_AND_BED {
 
     FILTER_STATS_UNIQUE_AND_NU(ch_filtered_bams.map{tuple(it[0], it[1], [])})
 
-    BEDTOOLS_BAMTOBED(ch_filtered_bams)
-    BEDTOOLS_BAMTOBED_FULL_BAM(addMetaData(bamInput, "both", "all"))
 
-    BEDTOOLS_GENOME_COVERAGE(BEDTOOLS_BAMTOBED.out.bed,fastaIndex)
-    BEDTOOLS_GENOME_COVERAGE_FULL_BAM(BEDTOOLS_BAMTOBED_FULL_BAM.out.bed,fastaIndex)
+    BEDTOOLS_GENOME_COVERAGE_BG(ch_filtered_bams, fastaIndex)
+
+    BEDTOOLS_GENOME_COVERAGE(ch_filtered_bams, fastaIndex)
+    BEDTOOLS_GENOME_COVERAGE_FULL_BAM(addMetaData(bamInput, "both", "all"), fastaIndex)
 
     mergeStatsInput = BEDTOOLS_GENOME_COVERAGE.out.coverage.mix(
         BEDTOOLS_GENOME_COVERAGE_FULL_BAM.out.coverage,
