@@ -4,7 +4,7 @@ process HISAT2_ALIGN {
 
     // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
     conda "${moduleDir}/environment.yml"
-    container 'docker.io/veupathdb/shortreadaligner:latest'
+    container 'docker.io/veupathdb/shortreadaligner:v1.0.0'
 
     input:
     tuple val(meta), path(reads)

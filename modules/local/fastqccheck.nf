@@ -2,7 +2,7 @@ process FASTQCCHECK {
     tag "$meta.id"
     label 'process_single'
 
-    container 'docker.io/veupathdb/shortreadaligner:latest'
+    container 'docker.io/veupathdb/shortreadaligner:v1.0.0'
 
     input:
     tuple val(meta), path(zip)

@@ -2,7 +2,7 @@ process MERGE_FILTERED_STATS {
     label 'process_low'
 
     conda "${moduleDir}/environment.yml"
-    container 'docker.io/veupathdb/shortreadaligner:latest'
+    container 'docker.io/veupathdb/shortreadaligner:v1.0.0'
 
     publishDir "${params.outdir}/$sampleId", mode: 'copy', pattern: "*mappingStats.txt*"
 
