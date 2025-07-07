@@ -36,6 +36,25 @@ process TRIMMOMATIC {
     """
     phredVar=\$(cat $phred)
 
+    cp $reads temp.fastq.gz
+    gunzip temp.fastq.gz
+    isFake=0
+
+    if [[ -f "temp.fastq" ]]; then
+        awk 'NR % 4 == 0 && \$0 !~ /^I+\$/ { exit 1 }' "temp.fastq"
+        if [[ \$? -eq 0 ]]; then
+            isFake=1
+        else
+            isFake=0
+        fi
+    fi
+
+    if [[ "\$isFake" -eq 1 ]]; then
+        phredVar=phred33
+    fi
+
+    rm temp.fastq
+
     trimmomatic \\
         $trimmed \\
         -\$phredVar \\
