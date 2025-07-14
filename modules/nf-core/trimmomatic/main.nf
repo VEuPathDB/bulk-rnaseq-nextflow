@@ -36,7 +36,11 @@ process TRIMMOMATIC {
     """
     phredVar=\$(cat $phred)
 
-    cp $reads temp.fastq.gz
+    mkdir check
+    cp *.fastq.gz check
+
+    first_file=\$(ls -p check | grep -v / | head -n 1)
+    cp \$first_file temp.fastq.gz
     gunzip temp.fastq.gz
     isFake=0
 
@@ -54,6 +58,7 @@ process TRIMMOMATIC {
     fi
 
     rm temp.fastq
+    rm -rf check
 
     trimmomatic \\
         $trimmed \\
