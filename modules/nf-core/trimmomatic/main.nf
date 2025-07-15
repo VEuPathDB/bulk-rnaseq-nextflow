@@ -45,11 +45,10 @@ process TRIMMOMATIC {
     isFake=0
 
     if [[ -f "temp.fastq" ]]; then
-        awk 'NR % 4 == 0 && \$0 !~ /^I+\$/ { exit 1 }' "temp.fastq"
-        if [[ \$? -eq 0 ]]; then
-            isFake=1
-        else
+        if awk 'NR % 4 == 0 && \$0 !~ /^I+\$/ { found = 1; exit } END { exit !found }' "temp.fastq"; then
             isFake=0
+        else
+            isFake=1
         fi
     fi
 
