@@ -63,6 +63,7 @@ process HISAT2_ALIGN {
         def unaligned = params.save_unaligned ? "--un-conc-gz ${prefix}.unmapped.fastq.gz" : ''
         """
         INDEX=`find -L ./ -name "*.1.ht2" | sed 's/\\.1.ht2\$//'`
+        mkdir ./tmp
         hisat2 \\
             -x \$INDEX \\
             -1 ${reads[0]} \\
@@ -74,6 +75,7 @@ process HISAT2_ALIGN {
             --threads $task.cpus \\
             $seq_center \\
             $unaligned \\
+            --temp-directory ./tmp \\
             $args
         samtools view -bS -F 256 tmp.sam > ${prefix}.bam
         rm tmp.sam
