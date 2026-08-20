@@ -1,68 +1,83 @@
-<!-- [![GitHub Actions CI Status](https://github.com/veupathdb/bulk-rnaseq-nextflow/actions/workflows/ci.yml/badge.svg)](https://github.com/veupathdb/bulk-rnaseq-nextflow/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/veupathdb/bulk-rnaseq-nextflow/actions/workflows/linting.yml/badge.svg)](https://github.com/veupathdb/bulk-rnaseq-nextflow/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
-[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
--->
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
-[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
-[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+# bulk-rnaseq-nextflow
 
+A Nextflow DSL2 pipeline, built on nf-core tooling, that aligns short-read bulk RNA-Seq FASTQ files to a reference genome and produces gene counts, coverage tracks, alignment statistics, and splice-junction data.
 
-## Introduction
+## Overview
 
-**veupathdb/bulk-rnaseq-nextflow** is a bioinformatics pipeline that aligns short RNASeq reads to genomic sequence.  It creates bedgraph, gene counts, alignment stats and intron juction files. 
+This pipeline is VEuPathDB's bulk RNA-Seq processing step: given per-sample paired- or single-end FASTQ files, it runs QC and adapter trimming, aligns reads to a reference genome with HISAT2, and derives the downstream data products used for gene expression analysis and genome browser tracks — HTSeq gene counts (stranded or unstranded, unique and multi-mapped), genome coverage bedGraphs split by strand and mapping uniqueness, merged alignment statistics, and splice-junction reads for intron detection. It can take FASTQ files directly or retrieve them from NCBI's SRA first.
 
+## Requirements
 
-![Workflow Diagram](docs/images/rnaseq_workflow_diagram.png)
+- [Nextflow](https://www.nextflow.io/) `>=23.04.0`
+- [Docker](https://www.docker.com/) or [Singularity](https://sylabs.io/singularity/)/[Apptainer](https://apptainer.org/) (profiles for both are provided; an `lsf` profile combining Singularity with LSF batch submission is also available)
 
 ## Usage
 
-> [!NOTE]
-> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
+The pipeline has two entry points.
 
-First, prepare a samplesheet with your input data that looks as follows:
+### Default entry point — align and quantify
 
-`samplesheet.csv`:
+```bash
+nextflow run VEuPathDB/bulk-rnaseq-nextflow -r main \
+  -profile docker \
+  --input samplesheet.csv \
+  --fasta /path/to/genome.fasta \
+  --gtf /path/to/genome.gtf \
+  --genome pfal3D7 \
+  --outdir <OUTDIR> \
+  -resume -C <config>
+```
+
+`samplesheet.csv` has one row per FASTQ file or FASTQ pair:
 
 ```csv
 sample,fastq_1,fastq_2
 CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+This runs `PIPELINE_INITIALISATION` (samplesheet parsing/validation) followed by the `BULKRNASEQ` workflow: FastQC → Trimmomatic → HISAT2 build (or reuse of an existing index) and align → samtools sort → strand/uniqueness-filtered BAM splitting → HTSeq counting → genome coverage bedGraphs and merged alignment stats → splice-junction read extraction.
 
-
-Now, you can run the pipeline using:
-
-
+### `getFromSra` — retrieve reads from SRA
 
 ```bash
-nextflow run veupathdb/bulk-rnaseq-nextflow \
-   -profile docker \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
+nextflow run VEuPathDB/bulk-rnaseq-nextflow -r main -entry getFromSra \
+  -profile docker \
+  --input sra_accessions.csv \
+  --outdir <OUTDIR> \
+  -resume -C <config>
 ```
 
-> [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
-> see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
+Downloads the runs listed in `--input` via `prefetch`/`fasterq-dump` and writes a formatted samplesheet (`formattedSraInput.csv`) suitable for use as `--input` to the default entry point.
 
-## Credits
+## Key parameters
 
-veupathdb/bulk-rnaseq-nextflow was originally written by John Brestelli.
+| Parameter | Description |
+|---|---|
+| `--input` | Samplesheet CSV (`sample`, `fastq_1`, `fastq_2`) for the default entry point, or a list of SRA accessions for `getFromSra` |
+| `--fasta` | Reference genome FASTA |
+| `--gtf` | Reference genome annotation GTF |
+| `--genome` | Genome/organism identifier, used to tag the HISAT2 index and other intermediate files |
+| `--outdir` | Output directory |
+| `--isStranded` | Whether the library is strand-specific; controls whether HTSeq counting and coverage/BAM splitting run in stranded (forward/reverse) or unstranded mode |
+| `--useExistingIndex` | Skip `HISAT2_BUILD` and align against a prebuilt index at `--hisatIndex` instead of building one from `--fasta` |
+| `--hisatIndex` | Path to a prebuilt HISAT2 index, used when `--useExistingIndex` is set |
+| `--intronLength` | Maximum intron length passed to splice-junction/read-crossing detection |
+| `--cdsOrExon` | Feature type (`exon` by default) used when counting reads against the GTF |
+| `--fromSra` | Whether the default workflow's input should be treated as coming from SRA |
+| `--publish_dir_mode` | File publishing mode for outputs (`copy` by default) |
 
-We thank the following people for their extensive assistance in the development of this pipeline:
+## Output
 
-Saikou Y Bah
-Richard Demko
+Published under `--outdir`, per sample:
 
+- FastQC reports and Trimmomatic-trimmed reads
+- Sorted, HISAT2-aligned BAM files, split into unique/non-unique and (if stranded) forward/reverse strand subsets
+- HTSeq gene count tables (stranded forward/reverse or unstranded, each for unique and non-unique alignments)
+- Genome coverage bedGraph files per strand/uniqueness subset, plus a full-BAM coverage track
+- Merged alignment and coverage statistics per sample
+- Splice-junction read data derived from the aligned SAM/BAM output
+- `pipeline_info/` execution reports (timeline, trace, resource usage, DAG)
 
 ## Citations
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
-This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/master/LICENSE).
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
+This pipeline reuses code and infrastructure from the [nf-core](https://nf-co.re) community. See [`CITATIONS.md`](CITATIONS.md) for the full list of tools and references.
