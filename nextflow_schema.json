@@ -74,6 +74,30 @@
                 }
             }
         },
+        "alignment_options": {
+            "title": "Alignment options",
+            "type": "object",
+            "fa_icon": "fas fa-align-center",
+            "description": "Options for HISAT2 index building and alignment.",
+            "properties": {
+                "save_unaligned": {
+                    "type": "boolean",
+                    "description": "Write reads that fail to align to gzipped FASTQ files (not published to outdir).",
+                    "fa_icon": "fas fa-save"
+                },
+                "seq_center": {
+                    "type": "string",
+                    "description": "Sequencing center added to the BAM read group (CN tag).",
+                    "fa_icon": "fas fa-institution"
+                },
+                "hisat2_build_memory": {
+                    "type": "string",
+                    "description": "Minimum memory needed to build a HISAT2 index with splice sites and exons; below this, they are skipped.",
+                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
+                    "fa_icon": "fas fa-memory"
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -282,6 +306,9 @@
         },
         {
             "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/alignment_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"

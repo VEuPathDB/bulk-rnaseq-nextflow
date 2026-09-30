@@ -12,8 +12,6 @@ process TRIMMOMATIC {
 
     output:
     tuple val(meta), path("*.paired.trim*.fastq.gz")   , emit: trimmed_reads
-    tuple val(meta), path("*.unpaired.trim_*.fastq.gz"), emit: unpaired_reads, optional:true
-    tuple val(meta), path("*_trim.log")                , emit: trim_log
     tuple val(meta), path("*_out.log")                 , emit: out_log
     tuple val(meta), path("*.summary")                 , emit: summary
     path "versions.yml"                                , emit: versions
@@ -28,7 +26,7 @@ process TRIMMOMATIC {
     def assetsDir = projectDir + "/assets"
     def output = meta.single_end ?
         "${prefix}.SE.paired.trim.fastq.gz" // HACK to avoid unpaired and paired in the trimmed_reads output
-        : "${prefix}.paired.trim_1.fastq.gz ${prefix}.unpaired.trim_1.fastq.gz ${prefix}.paired.trim_2.fastq.gz ${prefix}.unpaired.trim_2.fastq.gz"
+        : "${prefix}.paired.trim_1.fastq.gz /dev/null ${prefix}.paired.trim_2.fastq.gz /dev/null"
     def qual_trim = meta.single_end ?
         "ILLUMINACLIP:${assetsDir}/All_adaptors-SE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:20" :
         "ILLUMINACLIP:${assetsDir}/All_adaptors-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:20"
@@ -36,34 +34,23 @@ process TRIMMOMATIC {
     """
     phredVar=\$(cat $phred)
 
-    mkdir check
-    cp *.fastq.gz check
-
-    first_file=\$(ls -p check | grep -v / | head -n 1)
-    cp \$first_file temp.fastq.gz
-    gunzip temp.fastq.gz
+    first_file=\$(ls *.fastq.gz | head -n 1)
     isFake=0
 
-    if [[ -f "temp.fastq" ]]; then
-        if awk 'NR % 4 == 0 && \$0 !~ /^I+\$/ { found = 1; exit } END { exit !found }' "temp.fastq"; then
-            isFake=0
-        else
-            isFake=1
-        fi
+    if awk 'NR % 4 == 0 && \$0 !~ /^I+\$/ { found = 1; exit } END { exit !found }' <(zcat "\$first_file"); then
+        isFake=0
+    else
+        isFake=1
     fi
 
     if [[ "\$isFake" -eq 1 ]]; then
         phredVar=phred33
     fi
 
-    rm temp.fastq
-    rm -rf check
-
     trimmomatic \\
         $trimmed \\
         -\$phredVar \\
         -threads $task.cpus \\
-        -trimlog ${prefix}_trim.log \\
         -summary ${prefix}.summary \\
         $reads \\
         $output \\
@@ -84,14 +71,11 @@ process TRIMMOMATIC {
     } else {
         output_command  = "echo '' | gzip > ${prefix}.paired.trim_1.fastq.gz"
         output_command  = "echo '' | gzip > ${prefix}.paired.trim_2.fastq.gz"
-        output_command += "echo '' | gzip > ${prefix}.unpaired.trim_1.fastq.gz"
-        output_command += "echo '' | gzip > ${prefix}.unpaired.trim_2.fastq.gz"
     }
 
     """
     $output_command
     touch ${prefix}.summary
-    touch ${prefix}_trim.log
     touch ${prefix}_out.log
 
     cat <<-END_VERSIONS > versions.yml

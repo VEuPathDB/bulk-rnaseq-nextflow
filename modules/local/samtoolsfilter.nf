@@ -27,67 +27,36 @@ process SAMTOOLS_FILTER {
 
     if ("$input" == "${prefix}.bam") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
 
+    def uniqueOrNu = "samtools view -h $input | grep -E '$regex'"
+
     if (params.isStranded && meta.single_end && "$strand" == "firststrand") {
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o temp.bam
-        samtools index temp.bam
-
         # https://www.biostars.org/p/14378/ unmapped reads are ignored
-        samtools view -b -F 20 temp.bam >${prefix}.bam
+        $uniqueOrNu | samtools view -b -F 20 -o ${prefix}.bam -
         """
     }
     else if (params.isStranded && meta.single_end && "$strand" == "secondstrand") {
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o temp.bam
-        samtools index temp.bam
-
-        # https://www.biostars.org/p/14378/ unmapped reads are ignored
-        samtools view -b -f 16 temp.bam >${prefix}.bam
+        $uniqueOrNu | samtools view -b -f 16 -o ${prefix}.bam -
         """
     }
     else if (params.isStranded && !meta.single_end && "$strand" == "firststrand") {
+        // https://www.biostars.org/p/92935/ : second in pair on forward strand (163), first in pair on reverse strand (83)
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o temp.bam
-        samtools index temp.bam
-
-        # modified bash script from Istvan Albert to get for.bam and rev.bam
-        # https://www.biostars.org/p/92935/
-
-        # 1. alignments of the second in pair if they map to the forward strand
-        # 2. alignments of the first in pair if they map to the reverse strand
-        samtools view -b -f 163 temp.bam >fwd1.bam
-        samtools index fwd1.bam
-
-        samtools view -b -f 83 temp.bam >fwd2.bam
-        samtools index fwd2.bam
-
-        samtools merge -f ${prefix}.bam fwd1.bam fwd2.bam
+        $uniqueOrNu | samtools view -b -e '(flag & 163) == 163 || (flag & 83) == 83' -o ${prefix}.bam -
         samtools index ${prefix}.bam
         """
     }
     else if (params.isStranded && !meta.single_end && "$strand" == "secondstrand") {
+        // second in pair on reverse strand (147), first in pair on forward strand (99)
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o temp.bam
-        samtools index temp.bam
-
-        # modified bash script from Istvan Albert to get for.bam and rev.bam
-        # https://www.biostars.org/p/92935/
-
-        # 1. alignments of the second in pair if they map to the reverse strand
-        # 2. alignments of the first in pair if they map to the forward strand
-        samtools view -b -f 147 temp.bam > rev1.bam
-        samtools index rev1.bam
-
-        samtools view -b -f 99 temp.bam > rev2.bam
-        samtools index rev2.bam
-
-        samtools merge -f ${prefix}.bam rev1.bam rev2.bam
+        $uniqueOrNu | samtools view -b -e '(flag & 147) == 147 || (flag & 99) == 99' -o ${prefix}.bam -
         samtools index ${prefix}.bam
         """
     }
     else {
         """
-        samtools view -h  $input  | grep -E '$regex' |samtools view -h -b -o ${prefix}.bam
+        $uniqueOrNu | samtools view -h -b -o ${prefix}.bam
         samtools index ${prefix}.bam
         """
     }

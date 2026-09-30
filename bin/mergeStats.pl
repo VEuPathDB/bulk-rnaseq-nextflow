@@ -25,6 +25,9 @@ my $fullCov = "${sampleId}.cov";
 
 &readFile($sampleId, $fullStats, \%stats, undef);
 &readFile($sampleId, $fullCov, \%stats, undef);
+
+# The BAM no longer holds pairs where both mates are unmapped, so take the total from the aligner
+$stats{"${sampleId}"}->{"raw total sequences"} = &readHisat2TotalSequences("${sampleId}.hisat2.summary.log");
 &addPctMappedReads($sampleId, $sampleId, \%stats);
 
 $stats{"${sampleId}"}->{file} = "results.bam";
@@ -86,6 +89,22 @@ sub addFileKey {
     $statsHash->{$key}->{"file"} = $fileValue;
 }
 
+
+sub readHisat2TotalSequences {
+    my ($file) = @_;
+
+    my ($pairs, $unpaired) = (0, 0);
+    open(my $fh, $file) or die "Cannot open file $file for reading: $!";
+    while(<$fh>) {
+        $pairs = $1 if(/^\s*(\d+) \([\d.]+%\) were paired/);
+        $unpaired = $1 if(/^\s*(\d+) \([\d.]+%\) were unpaired/);
+    }
+    close $fh;
+
+    my $total = 2 * $pairs + $unpaired;
+    die "No read counts found in $file" unless($total);
+    return $total;
+}
 
 sub readFile {
     my ($uniqueId, $file, $statsHash, $totalReads) = @_;
