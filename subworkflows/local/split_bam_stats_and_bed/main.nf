@@ -32,6 +32,7 @@ workflow SPLIT_BAM_STATS_AND_BED {
     take:
     bam
     fastaIndex
+    alignSummary
 
     main:
 
@@ -81,6 +82,7 @@ workflow SPLIT_BAM_STATS_AND_BED {
         FILTER_STATS_UNIQUE_AND_NU.out.stats,
         addMetaData(FILTER_STATS.out.stats, "both", "all")
     ).map{ tuple(it[0].sampleId, it[1])}
+        .mix(alignSummary.map{ tuple(it[0].id, it[1]) })
         .groupTuple()
 
 

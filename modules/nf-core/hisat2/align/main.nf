@@ -74,7 +74,7 @@ process HISAT2_ALIGN {
             $unaligned \\
             --temp-directory ./tmp \\
             $args \\
-            | samtools view -b -F 256 -o ${prefix}.bam -
+            | samtools view -b -F 256 -G 12 -o ${prefix}.bam -
 
         if [ -f ${prefix}.unmapped.fastq.1.gz ]; then
             mv ${prefix}.unmapped.fastq.1.gz ${prefix}.unmapped_1.fastq.gz
