@@ -41,7 +41,6 @@ process HISAT2_ALIGN {
         hisat2 \\
             -x \$INDEX \\
             -U $reads \\
-            -S tmp.sam \\
             $strandedness \\
             $ss \\
             --summary-file ${prefix}.hisat2.summary.log \\
@@ -49,9 +48,8 @@ process HISAT2_ALIGN {
             $seq_center \\
             $unaligned \\
             --temp-directory ./tmp \\
-            $args
-        samtools view -bS -F 4 tmp.sam > ${prefix}.bam
-        rm tmp.sam
+            $args \\
+            | samtools view -b -F 4 -o ${prefix}.bam -
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
@@ -68,7 +66,6 @@ process HISAT2_ALIGN {
             -x \$INDEX \\
             -1 ${reads[0]} \\
             -2 ${reads[1]} \\
-            -S tmp.sam \\
             $strandedness \\
             $ss \\
             --summary-file ${prefix}.hisat2.summary.log \\
@@ -76,9 +73,8 @@ process HISAT2_ALIGN {
             $seq_center \\
             $unaligned \\
             --temp-directory ./tmp \\
-            $args
-        samtools view -bS -F 256 tmp.sam > ${prefix}.bam
-        rm tmp.sam
+            $args \\
+            | samtools view -b -F 256 -o ${prefix}.bam -
 
         if [ -f ${prefix}.unmapped.fastq.1.gz ]; then
             mv ${prefix}.unmapped.fastq.1.gz ${prefix}.unmapped_1.fastq.gz
