@@ -19,8 +19,9 @@ process BEDTOOLS_GENOME_COVERAGE {
     task.ext.when == null || task.ext.when
 
     script:
+    def args = task.ext.args ?: ''
     """
-    bedtools genomecov -ibam $bam -g $index | genomeCov.awk > ${meta.id}.cov
+    bedtools genomecov $args -ibam $bam -g $index | genomeCov.awk > ${meta.id}.cov
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -62,8 +63,9 @@ process BEDTOOLS_GENOME_COVERAGE_BG {
     task.ext.when == null || task.ext.when
 
     script:
+    def args = task.ext.args ?: ''
     """
-    bedtools genomecov -bg -ibam $bam -g $index > ${meta.bedfileName}.bed
+    bedtools genomecov -bg $args -ibam $bam -g $index > ${meta.bedfileName}.bed
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
