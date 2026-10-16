@@ -97,7 +97,7 @@ workflow SPLIT_BAM_STATS_AND_BED {
 
 def addMetaData(ch, strand, align) {
     return ch.map {
-        meta = it[0]
+        def meta = it[0]
         def newId = meta.id
         def bedfilename = "";
         def alignPretty = "all_results";
@@ -111,7 +111,7 @@ def addMetaData(ch, strand, align) {
             alignPretty = "non_unique_results";
 
         }
-        newMeta = meta.clone();
+        def newMeta = meta.clone();
         newMeta.sampleId = meta.id
         newMeta.id = newId
 
