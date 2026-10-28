@@ -1,0 +1,69 @@
+// For a reverse-stranded library, firststrand must cover + strand genes in both layouts.
+// Fixture read names say where each read belongs; the assertions compare name:flag.
+nextflow_process {
+
+    name "SAMTOOLS_FILTER strand split"
+    script "modules/local/samtoolsfilter.nf"
+    process "SAMTOOLS_FILTER"
+    tag "samtools_filter"
+
+    test("single-end firststrand keeps reverse-strand reads") {
+        when {
+            process {
+                """
+                input[0] = [ [ id:'se', single_end:true ], file("${baseDir}/tests/fixtures/single_end.sam", checkIfExists: true), [] ]
+                input[1] = 'firststrand'
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert bam(process.out.bam[0][1]).getSamLines().collect { it.split('\t')[0..1].join(':') }.sort() == [ 'se_rev:16' ]
+        }
+    }
+
+    test("single-end secondstrand keeps forward-strand reads") {
+        when {
+            process {
+                """
+                input[0] = [ [ id:'se', single_end:true ], file("${baseDir}/tests/fixtures/single_end.sam", checkIfExists: true), [] ]
+                input[1] = 'secondstrand'
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert bam(process.out.bam[0][1]).getSamLines().collect { it.split('\t')[0..1].join(':') }.sort() == [ 'se_fwd:0' ]
+        }
+    }
+
+    test("paired-end firststrand keeps fragments whose read 1 is reverse") {
+        when {
+            process {
+                """
+                input[0] = [ [ id:'pe', single_end:false ], file("${baseDir}/tests/fixtures/paired_end.sam", checkIfExists: true), [] ]
+                input[1] = 'firststrand'
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert bam(process.out.bam[0][1]).getSamLines().collect { it.split('\t')[0..1].join(':') }.sort() == [ 'pe_read1_rev:163', 'pe_read1_rev:83' ]
+        }
+    }
+
+    test("paired-end secondstrand keeps fragments whose read 1 is forward") {
+        when {
+            process {
+                """
+                input[0] = [ [ id:'pe', single_end:false ], file("${baseDir}/tests/fixtures/paired_end.sam", checkIfExists: true), [] ]
+                input[1] = 'secondstrand'
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert bam(process.out.bam[0][1]).getSamLines().collect { it.split('\t')[0..1].join(':') }.sort() == [ 'pe_read1_fwd:147', 'pe_read1_fwd:99' ]
+        }
+    }
+}

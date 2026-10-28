@@ -29,15 +29,16 @@ process SAMTOOLS_FILTER {
 
     def uniqueOrNu = "samtools view -h $input | grep -E '$regex'"
 
+    // Single-end matches paired-end: firststrand is the read (read 1) on the reverse strand
     if (params.isStranded && meta.single_end && "$strand" == "firststrand") {
         """
-        # https://www.biostars.org/p/14378/ unmapped reads are ignored
-        $uniqueOrNu | samtools view -b -F 20 -o ${prefix}.bam -
+        $uniqueOrNu | samtools view -b -f 16 -o ${prefix}.bam -
         """
     }
     else if (params.isStranded && meta.single_end && "$strand" == "secondstrand") {
         """
-        $uniqueOrNu | samtools view -b -f 16 -o ${prefix}.bam -
+        # https://www.biostars.org/p/14378/ unmapped reads are ignored
+        $uniqueOrNu | samtools view -b -F 20 -o ${prefix}.bam -
         """
     }
     else if (params.isStranded && !meta.single_end && "$strand" == "firststrand") {
